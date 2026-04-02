@@ -468,9 +468,12 @@ export default function DriverTest() {
       <div style={wrap}>
         <div ref={ref} />
         <div style={hdr}>
-          <span style={{ fontSize: "30px" }}>🚛</span>
           <div>
-            <div style={{ fontSize: "20px", fontWeight: "800", letterSpacing: "1.5px" }}>ERGASIA</div>
+            <img
+              src="https://ergasia.group/JPG%20copy%20copy.jpg"
+              alt="Ergasia logo"
+              style={{ height: "44px", width: "auto", display: "block", marginBottom: "6px", borderRadius: "4px" }}
+            />
             <div style={{ fontSize: "12px", color: cc.accent, fontWeight: "600" }}>QUICK INTERNATIONAL TRAILER DRIVER VERIFICATION</div>
           </div>
         </div>
