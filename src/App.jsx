@@ -71,10 +71,10 @@ const PERS=[
 const TL={stress:"Stress handling",independence:"Independence",adaptability:"Adaptability",communication:"Communication",discipline:"Discipline",professionalism:"Professionalism"};
 function getGrade(k,p){if(k>=82&&p>=70)return"A";if(k>=65&&p>=55)return"B";if(k>=45&&p>=40)return"C";return"FAILED";}
 const GI={
-  A:{color:"#22c55e",bg:"#14532d",label:"Category A - Excellent",desc:"Very strong knowledge. Suitable for stronger clients and premium opportunities."},
-  B:{color:"#eab308",bg:"#422006",label:"Category B - Good",desc:"Good knowledge. Usually suitable after a short introduction or check call."},
-  C:{color:"#f97316",bg:"#431407",label:"Category C - Conditional",desc:"Needs additional training or follow-up verification before being presented further."},
-  FAILED:{color:"#ef4444",bg:"#450a0a",label:"Not suitable yet",desc:"The current result shows that more preparation is needed before moving forward."}
+  A:{color:"#1fa269",bg:"#eaf8f0",label:"Category A - Excellent",desc:"Very strong knowledge. Suitable for stronger clients and premium opportunities."},
+  B:{color:"#c98700",bg:"#fff7e6",label:"Category B - Good",desc:"Good knowledge. Usually suitable after a short introduction or check call."},
+  C:{color:"#e07b1f",bg:"#fff2e8",label:"Category C - Conditional",desc:"Needs additional training or follow-up verification before being presented further."},
+  FAILED:{color:"#d94b4b",bg:"#fff0f0",label:"Not suitable yet",desc:"The current result shows that more preparation is needed before moving forward."}
 };
 
 function normalizePassportNumber(value = "") {
@@ -419,48 +419,53 @@ export default function DriverTest() {
   };
 
   const cc = {
-    bg: "#0c1117",
-    card: "#151d28",
-    accent: "#f59e0b",
-    text: "#e2e8f0",
-    dim: "#6b7d93",
-    ok: "#22c55e",
-    bad: "#ef4444",
-    border: "#1e2d3d",
+    bg: "#edf3fb",
+    card: "#ffffff",
+    accent: "#f5a300",
+    text: "#10233f",
+    dim: "#61748d",
+    ok: "#1fa269",
+    bad: "#d94b4b",
+    border: "#d7e2f0",
+    navy: "#0f2f59",
+    navySoft: "#173d6b",
   };
   const wrap = {
     fontFamily: "'Segoe UI',system-ui,sans-serif",
-    background: cc.bg,
+    background: "radial-gradient(circle at top left, #ffffff 0%, #f8fbff 35%, #edf3fb 100%)",
     color: cc.text,
     minHeight: "100vh",
   };
   const hdr = {
-    background: "linear-gradient(135deg,#111927,#0c1a2e)",
+    background: "linear-gradient(135deg,#123864 0%, #0f2f59 55%, #173d6b 100%)",
     borderBottom: `3px solid ${cc.accent}`,
-    padding: "20px 24px",
+    padding: "22px 28px",
     display: "flex",
     alignItems: "center",
-    gap: "14px",
+    gap: "16px",
+    boxShadow: "0 10px 30px rgba(15,47,89,0.15)",
   };
-  const body = { maxWidth: "700px", margin: "0 auto", padding: "24px 16px" };
+  const body = { maxWidth: "760px", margin: "0 auto", padding: "30px 18px 42px" };
   const card = {
     background: cc.card,
     border: `1px solid ${cc.border}`,
-    borderRadius: "12px",
+    borderRadius: "18px",
     padding: "20px",
     marginBottom: "14px",
+    boxShadow: "0 12px 28px rgba(16,35,63,0.06)",
   };
   const btnS = (ok) => ({
-    background: ok ? `linear-gradient(135deg,${cc.accent},#d97706)` : "#1e2d3d",
-    color: ok ? "#000" : "#4a5568",
+    background: ok ? `linear-gradient(135deg,${cc.accent},#ffb933)` : "#d7e2f0",
+    color: ok ? cc.navy : "#7f8ea3",
     border: "none",
-    padding: "14px 28px",
-    borderRadius: "8px",
+    padding: "16px 28px",
+    borderRadius: "12px",
     fontSize: "15px",
-    fontWeight: "700",
+    fontWeight: "800",
     cursor: ok ? "pointer" : "not-allowed",
     width: "100%",
     transition: "all 0.2s",
+    boxShadow: ok ? "0 10px 22px rgba(245,163,0,0.22)" : "none",
   });
 
   if (phase === "intro") {
@@ -472,18 +477,18 @@ export default function DriverTest() {
             <img
               src="https://ergasia.group/JPG%20copy%20copy.jpg"
               alt="Ergasia logo"
-              style={{ height: "44px", width: "auto", display: "block", marginBottom: "6px", borderRadius: "4px" }}
+              style={{ height: "74px", width: "auto", display: "block", marginBottom: "8px", borderRadius: "10px", boxShadow: "0 10px 24px rgba(8,27,52,0.18)" }}
             />
-            <div style={{ fontSize: "12px", color: cc.accent, fontWeight: "600" }}>QUICK INTERNATIONAL TRAILER DRIVER VERIFICATION</div>
+            <div style={{ fontSize: "13px", color: "#ffd57a", fontWeight: "700", letterSpacing: "0.4px" }}>QUICK INTERNATIONAL TRAILER DRIVER VERIFICATION</div>
           </div>
         </div>
         <div style={body}>
-          <h1 style={{ fontSize: "24px", fontWeight: "800", margin: "0 0 6px" }}>Get access to better job opportunities for International trailer drivers</h1>
-          <p style={{ color: cc.dim, margin: "0 0 24px", fontSize: "14px" }}>
+          <h1 style={{ fontSize: "34px", lineHeight: "1.2", fontWeight: "900", color: cc.navy, margin: "6px 0 10px", textAlign: "center" }}>Get access to better job opportunities for International trailer drivers</h1>
+          <p style={{ color: cc.dim, margin: "0 0 28px", fontSize: "17px", lineHeight: "1.65", textAlign: "center", maxWidth: "760px" }}>
             Many of our better-paying employers usually prefer drivers whose knowledge and experience have already been verified.
           </p>
           {SECTIONS.map((section) => (
-            <div key={section.id} style={{ ...card, display: "flex", alignItems: "center", gap: "14px", padding: "14px 18px" }}>
+            <div key={section.id} style={{ ...card, display: "flex", alignItems: "center", gap: "16px", padding: "18px 20px", background: "linear-gradient(180deg,#ffffff 0%, #f8fbff 100%)" }}>
               <span style={{ fontSize: "24px", width: "36px", textAlign: "center" }}>{section.icon}</span>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: "700", fontSize: "14px" }}>{section.title}</div>
@@ -510,9 +515,9 @@ export default function DriverTest() {
             </div>
           </div>
           <div style={{ ...card, background: "#1a1510", border: "1px solid #3a2a10" }}>
-            <div style={{ fontWeight: "700", color: cc.accent, fontSize: "13px", marginBottom: "4px" }}>RESULT DELIVERY</div>
+            <div style={{ fontWeight: "700", color: cc.accent, fontSize: "13px", marginBottom: "4px" }}>IMPORTANT</div>
             <p style={{ fontSize: "13px", color: cc.dim, margin: 0, lineHeight: "1.6" }}>
-              This short assessment takes around 15 minutes and helps us understand your real practical knowledge, route awareness, documents, loading, and everyday decisions on the road.
+              This short assessment usually takes around 15 minutes. It is not a school exam or a trick test — it simply helps us understand your real practical knowledge and match you with more suitable offers.
             </p>
           </div>
           <button style={btnS(true)} onClick={() => setPhase("info")}>GET ACCESS TO BETTER OFFERS →</button>
@@ -528,10 +533,13 @@ export default function DriverTest() {
       <div style={wrap}>
         <div ref={ref} />
         <div style={hdr}>
-          <span style={{ fontSize: "30px" }}>🚛</span>
           <div>
-            <div style={{ fontSize: "20px", fontWeight: "800" }}>ERGASIA</div>
-            <div style={{ fontSize: "12px", color: cc.accent, fontWeight: "600" }}>DRIVER DETAILS</div>
+            <img
+              src="https://ergasia.group/JPG%20copy%20copy.jpg"
+              alt="Ergasia logo"
+              style={{ height: "64px", width: "auto", display: "block", marginBottom: "6px", borderRadius: "10px", boxShadow: "0 10px 24px rgba(8,27,52,0.18)" }}
+            />
+            <div style={{ fontSize: "12px", color: "#ffd57a", fontWeight: "700", letterSpacing: "0.4px" }}>DRIVER DETAILS</div>
           </div>
         </div>
         <div style={{ ...body, maxWidth: "520px" }}>
@@ -608,14 +616,14 @@ export default function DriverTest() {
             {qs.map((_, index) => {
               const localKey = `${sid}-${index}`;
               const doneLocal = isPers ? pAns[localKey] !== undefined : ans[localKey] !== undefined;
-              return <div key={index} style={{ flex: 1, height: "5px", borderRadius: "3px", background: index === qi ? cc.accent : doneLocal ? "#2a5a1a" : cc.border }} />;
+              return <div key={index} style={{ flex: 1, height: "5px", borderRadius: "3px", background: index === qi ? cc.accent : doneLocal ? "#bfe7ce" : cc.border }} />;
             })}
           </div>
           <div style={{ fontSize: "12px", color: cc.dim, fontWeight: "600", marginBottom: "6px" }}>
             Question {qi + 1} of {qs.length}
           </div>
           {isSign && SignComp ? (
-            <div style={{ display: "flex", justifyContent: "center", margin: "14px 0", padding: "18px", background: "#0a0e14", borderRadius: "12px", border: `1px solid ${cc.border}` }}>
+            <div style={{ display: "flex", justifyContent: "center", margin: "14px 0", padding: "18px", background: "#f7fbff", borderRadius: "12px", border: `1px solid ${cc.border}` }}>
               {cur.signArg ? signs[cur.sign](cur.signArg) : <SignComp />}
             </div>
           ) : null}
@@ -629,15 +637,15 @@ export default function DriverTest() {
               let background = cc.card;
               if (selected && isPers) {
                 borderColor = cc.accent;
-                background = "#1f1a10";
+                background = "#fff7e6";
               }
               if (correct) {
                 borderColor = cc.ok;
-                background = "#0f1f14";
+                background = "#edf9f1";
               }
               if (wrong) {
                 borderColor = cc.bad;
-                background = "#1f0f0f";
+                background = "#fff0f0";
               }
 
               return (
@@ -674,7 +682,7 @@ export default function DriverTest() {
                       fontSize: "12px",
                       fontWeight: "700",
                       marginTop: "1px",
-                      background: correct ? cc.ok : wrong ? cc.bad : selected ? cc.accent : "transparent",
+                      background: correct ? cc.ok : wrong ? cc.bad : selected ? cc.accent : "#ffffff",
                       border: `2px solid ${correct ? cc.ok : wrong ? cc.bad : selected ? cc.accent : cc.border}`,
                       color: selected || correct || wrong ? "#000" : cc.dim,
                     }}
@@ -692,8 +700,8 @@ export default function DriverTest() {
                 marginTop: "14px",
                 padding: "14px 16px",
                 borderRadius: "10px",
-                background: ans[key] === cur.correct ? "#0f1f14" : "#1f0f0f",
-                border: `1px solid ${ans[key] === cur.correct ? "#1e3a1e" : "#3a1e1e"}`,
+                background: ans[key] === cur.correct ? "#edf9f1" : "#fff0f0",
+                border: `1px solid ${ans[key] === cur.correct ? "#b8e0c4" : "#f0b7b7"}`,
                 fontSize: "13px",
                 lineHeight: "1.6",
               }}
@@ -726,10 +734,13 @@ export default function DriverTest() {
       <div style={wrap}>
         <div ref={ref} />
         <div style={hdr}>
-          <span style={{ fontSize: "28px" }}>📊</span>
           <div>
-            <div style={{ fontSize: "20px", fontWeight: "800" }}>ERGASIA</div>
-            <div style={{ fontSize: "12px", color: cc.accent, fontWeight: "600" }}>VERIFICATION RESULTS</div>
+            <img
+              src="https://ergasia.group/JPG%20copy%20copy.jpg"
+              alt="Ergasia logo"
+              style={{ height: "64px", width: "auto", display: "block", marginBottom: "6px", borderRadius: "10px", boxShadow: "0 10px 24px rgba(8,27,52,0.18)" }}
+            />
+            <div style={{ fontSize: "12px", color: "#ffd57a", fontWeight: "700", letterSpacing: "0.4px" }}>VERIFICATION RESULTS</div>
           </div>
         </div>
         <div style={body}>
@@ -739,8 +750,8 @@ export default function DriverTest() {
             <div style={{ color: cc.dim, fontSize: "13px", marginTop: "8px" }}>{gi.desc}</div>
           </div>
 
-          <div style={{ ...card, background: "#111a10", border: `1px solid ${cc.accent}40` }}>
-            <div style={{ fontWeight: "700", color: cc.accent, fontSize: "13px", marginBottom: "8px" }}>RESULT DELIVERY</div>
+          <div style={{ ...card, background: "linear-gradient(180deg,#fff8ed 0%, #fff4e3 100%)", border: `1px solid #f0d2a4` }}>
+            <div style={{ fontWeight: "700", color: cc.accent, fontSize: "13px", marginBottom: "8px" }}>IMPORTANT</div>
             <div style={{ fontSize: "13px", color: cc.dim, lineHeight: "1.6" }}>
               Your result is being prepared with two attachments: PDF and JSON. Passport: <strong>{maskPassportNumber(info.passportNumber)}</strong>
             </div>
@@ -759,7 +770,7 @@ export default function DriverTest() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginBottom: "20px" }}>
             {[
               { label: "Knowledge", value: `${results.kP}%`, sub: `${results.mc}/${results.totalK}` },
-              { label: "Work style", value: `${results.pP}%`, sub: "MKD profil" },
+              { label: "Work style", value: `${results.pP}%`, sub: "driver profile" },
               { label: "Time", value: `${results.dur} min`, sub: "total" },
             ].map((item) => (
               <div key={item.label} style={{ ...card, textAlign: "center", padding: "14px 8px" }}>
