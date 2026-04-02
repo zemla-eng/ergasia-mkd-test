@@ -419,53 +419,58 @@ export default function DriverTest() {
   };
 
   const cc = {
-    bg: "#edf3fb",
+    bg: "#f7fafc",
     card: "#ffffff",
-    accent: "#f5a300",
-    text: "#10233f",
-    dim: "#61748d",
-    ok: "#1fa269",
+    accent: "#f68b33",
+    text: "#123864",
+    dim: "#5c6f86",
+    ok: "#22a06b",
     bad: "#d94b4b",
-    border: "#d7e2f0",
-    navy: "#0f2f59",
-    navySoft: "#173d6b",
+    border: "#dce6f2",
+    navy: "#123864",
+    navySoft: "#1f4f85",
+    softBlue: "#eef5fc",
+    softOrange: "#fff4e8",
   };
   const wrap = {
     fontFamily: "'Segoe UI',system-ui,sans-serif",
-    background: "radial-gradient(circle at top left, #ffffff 0%, #f8fbff 35%, #edf3fb 100%)",
+    background: "linear-gradient(180deg, #ffffff 0%, #f7fafc 52%, #eef4fb 100%)",
     color: cc.text,
     minHeight: "100vh",
   };
   const hdr = {
-    background: "linear-gradient(135deg,#123864 0%, #0f2f59 55%, #173d6b 100%)",
+    background: "#ffffff",
     borderBottom: `3px solid ${cc.accent}`,
-    padding: "22px 28px",
+    padding: "18px 28px",
     display: "flex",
     alignItems: "center",
     gap: "16px",
-    boxShadow: "0 10px 30px rgba(15,47,89,0.15)",
+    boxShadow: "0 8px 24px rgba(18,56,100,0.08)",
+    position: "sticky",
+    top: 0,
+    zIndex: 5,
   };
-  const body = { maxWidth: "760px", margin: "0 auto", padding: "30px 18px 42px" };
+  const body = { maxWidth: "820px", margin: "0 auto", padding: "36px 18px 46px" };
   const card = {
     background: cc.card,
     border: `1px solid ${cc.border}`,
-    borderRadius: "18px",
+    borderRadius: "22px",
     padding: "20px",
     marginBottom: "14px",
-    boxShadow: "0 12px 28px rgba(16,35,63,0.06)",
+    boxShadow: "0 10px 24px rgba(18,56,100,0.06)",
   };
   const btnS = (ok) => ({
-    background: ok ? `linear-gradient(135deg,${cc.accent},#ffb933)` : "#d7e2f0",
-    color: ok ? cc.navy : "#7f8ea3",
+    background: ok ? `linear-gradient(135deg,${cc.accent},#ffb54f)` : "#d7e2f0",
+    color: ok ? "#123864" : "#7f8ea3",
     border: "none",
-    padding: "16px 28px",
-    borderRadius: "12px",
-    fontSize: "15px",
+    padding: "18px 28px",
+    borderRadius: "14px",
+    fontSize: "16px",
     fontWeight: "800",
     cursor: ok ? "pointer" : "not-allowed",
     width: "100%",
     transition: "all 0.2s",
-    boxShadow: ok ? "0 10px 22px rgba(245,163,0,0.22)" : "none",
+    boxShadow: ok ? "0 12px 26px rgba(246,139,51,0.24)" : "none",
   });
 
   if (phase === "intro") {
@@ -477,46 +482,46 @@ export default function DriverTest() {
             <img
               src="https://ergasia.group/JPG%20copy%20copy.jpg"
               alt="Ergasia logo"
-              style={{ height: "74px", width: "auto", display: "block", marginBottom: "8px", borderRadius: "10px", boxShadow: "0 10px 24px rgba(8,27,52,0.18)" }}
+              style={{ height: "68px", width: "auto", display: "block", marginBottom: "8px", borderRadius: "10px", boxShadow: "0 6px 18px rgba(18,56,100,0.10)" }}
             />
-            <div style={{ fontSize: "13px", color: "#ffd57a", fontWeight: "700", letterSpacing: "0.4px" }}>QUICK INTERNATIONAL TRAILER DRIVER VERIFICATION</div>
+            <div style={{ fontSize: "13px", color: "#f68b33", fontWeight: "700", letterSpacing: "0.4px" }}>QUICK INTERNATIONAL TRAILER DRIVER VERIFICATION</div>
           </div>
         </div>
         <div style={body}>
-          <h1 style={{ fontSize: "34px", lineHeight: "1.2", fontWeight: "900", color: cc.navy, margin: "6px 0 10px", textAlign: "center" }}>Get access to better job opportunities for International trailer drivers</h1>
+          <h1 style={{ fontSize: "34px", lineHeight: "1.2", fontWeight: "900", color: cc.navy, margin: "8px 0 12px", textAlign: "center", letterSpacing: "-0.5px" }}>Get access to better job opportunities for International trailer drivers</h1>
           <p style={{ color: cc.dim, margin: "0 0 28px", fontSize: "17px", lineHeight: "1.65", textAlign: "center", maxWidth: "760px" }}>
-            Many of our better-paying employers usually prefer drivers whose knowledge and experience have already been verified.
+            Employers offering stronger pay packages usually prefer drivers whose knowledge and experience have already been verified.
           </p>
           {SECTIONS.map((section) => (
-            <div key={section.id} style={{ ...card, display: "flex", alignItems: "center", gap: "16px", padding: "18px 20px", background: "linear-gradient(180deg,#ffffff 0%, #f8fbff 100%)" }}>
+            <div key={section.id} style={{ ...card, display: "flex", alignItems: "center", gap: "16px", padding: "18px 20px", background: "linear-gradient(180deg,#ffffff 0%, #fbfdff 100%)" }}>
               <span style={{ fontSize: "24px", width: "36px", textAlign: "center" }}>{section.icon}</span>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: "700", fontSize: "14px" }}>{section.title}</div>
                 <div style={{ color: cc.dim, fontSize: "12px" }}>{section.desc}</div>
               </div>
               <div style={{ color: cc.accent, fontSize: "12px", fontWeight: "700" }}>
-                {section.id === "personality" ? "6" : "8"} q.
+                {section.id === "personality" ? "6 questions" : "8 questions"}
               </div>
             </div>
           ))}
-          <div style={{ ...card, background: "#111f12", border: "1px solid #1e3a1e", marginTop: "16px" }}>
+          <div style={{ ...card, background: "linear-gradient(180deg,#f2f7fc 0%, #edf5fb 100%)", border: "1px solid #d7e4f1", marginTop: "16px" }}>
             <div style={{ fontWeight: "700", color: cc.accent, fontSize: "13px", marginBottom: "6px" }}>WHY IT IS WORTH COMPLETING</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px", fontSize: "13px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", fontSize: "15px", color: cc.navy, lineHeight: "1.7" }}>
               {[
-                ["A", "#22c55e", "Stronger results are often considered first for better-paying opportunities"],
-                ["B", "#eab308", "Faster matching with suitable employers"],
-                ["C", "#f97316", "Higher chance of being presented to stronger clients"],
-                ["FAIL", "#ef4444", "Shorter and easier follow-up interview"],
+                ["Priority", "#22a06b", "Stronger results are often considered first for better-paying opportunities"],
+                ["Faster match", "#f68b33", "You can be matched with suitable employers more quickly"],
+                ["Better fit", "#1f4f85", "We can present you to stronger clients with more confidence"],
+                ["Less friction", "#123864", "The follow-up conversation is usually shorter and easier"],
               ].map(([grade, color, text]) => (
-                <div key={grade}>
+                <div key={grade} style={{ padding: "8px 10px", background: "rgba(255,255,255,0.55)", borderRadius: "14px", border: "1px solid #e2ebf5" }}>
                   <span style={{ color, fontWeight: "800" }}>{grade}</span> – {text}
                 </div>
               ))}
             </div>
           </div>
-          <div style={{ ...card, background: "#1a1510", border: "1px solid #3a2a10" }}>
+          <div style={{ ...card, background: "linear-gradient(180deg,#fff5ea 0%, #fffaf5 100%)", border: "1px solid #f0d5b5" }}>
             <div style={{ fontWeight: "700", color: cc.accent, fontSize: "13px", marginBottom: "4px" }}>IMPORTANT</div>
-            <p style={{ fontSize: "13px", color: cc.dim, margin: 0, lineHeight: "1.6" }}>
+            <p style={{ fontSize: "15px", color: cc.navy, margin: 0, lineHeight: "1.7", textAlign: "center" }}>
               This short assessment usually takes around 15 minutes. It is not a school exam or a trick test — it simply helps us understand your real practical knowledge and match you with more suitable offers.
             </p>
           </div>
@@ -537,9 +542,9 @@ export default function DriverTest() {
             <img
               src="https://ergasia.group/JPG%20copy%20copy.jpg"
               alt="Ergasia logo"
-              style={{ height: "64px", width: "auto", display: "block", marginBottom: "6px", borderRadius: "10px", boxShadow: "0 10px 24px rgba(8,27,52,0.18)" }}
+              style={{ height: "60px", width: "auto", display: "block", marginBottom: "6px", borderRadius: "10px", boxShadow: "0 6px 18px rgba(18,56,100,0.10)" }}
             />
-            <div style={{ fontSize: "12px", color: "#ffd57a", fontWeight: "700", letterSpacing: "0.4px" }}>DRIVER DETAILS</div>
+            <div style={{ fontSize: "12px", color: "#f68b33", fontWeight: "700", letterSpacing: "0.4px" }}>DRIVER DETAILS</div>
           </div>
         </div>
         <div style={{ ...body, maxWidth: "520px" }}>
@@ -738,9 +743,9 @@ export default function DriverTest() {
             <img
               src="https://ergasia.group/JPG%20copy%20copy.jpg"
               alt="Ergasia logo"
-              style={{ height: "64px", width: "auto", display: "block", marginBottom: "6px", borderRadius: "10px", boxShadow: "0 10px 24px rgba(8,27,52,0.18)" }}
+              style={{ height: "60px", width: "auto", display: "block", marginBottom: "6px", borderRadius: "10px", boxShadow: "0 6px 18px rgba(18,56,100,0.10)" }}
             />
-            <div style={{ fontSize: "12px", color: "#ffd57a", fontWeight: "700", letterSpacing: "0.4px" }}>VERIFICATION RESULTS</div>
+            <div style={{ fontSize: "12px", color: "#f68b33", fontWeight: "700", letterSpacing: "0.4px" }}>VERIFICATION RESULTS</div>
           </div>
         </div>
         <div style={body}>
@@ -750,7 +755,7 @@ export default function DriverTest() {
             <div style={{ color: cc.dim, fontSize: "13px", marginTop: "8px" }}>{gi.desc}</div>
           </div>
 
-          <div style={{ ...card, background: "linear-gradient(180deg,#fff8ed 0%, #fff4e3 100%)", border: `1px solid #f0d2a4` }}>
+          <div style={{ ...card, background: "linear-gradient(180deg,#fff7ec 0%, #fffaf3 100%)", border: `1px solid #f5d3a3` }}>
             <div style={{ fontWeight: "700", color: cc.accent, fontSize: "13px", marginBottom: "8px" }}>IMPORTANT</div>
             <div style={{ fontSize: "13px", color: cc.dim, lineHeight: "1.6" }}>
               Your result is being prepared with two attachments: PDF and JSON. Passport: <strong>{maskPassportNumber(info.passportNumber)}</strong>
@@ -819,8 +824,8 @@ export default function DriverTest() {
 
           <div style={{ ...card, background: "#111a10", border: `1px solid ${cc.accent}40`, marginTop: "20px" }}>
             <div style={{ fontWeight: "700", color: cc.accent, fontSize: "13px", marginBottom: "8px" }}>NEXT STEP</div>
-            <p style={{ fontSize: "13px", color: cc.dim, margin: 0, lineHeight: "1.6" }}>
-              A recruiter may contact you for a short follow-up video call. Please have your documents ready.
+            <p style={{ fontSize: "15px", color: cc.navy, margin: 0, lineHeight: "1.7", textAlign: "center" }}>
+              A recruiter may contact you for a short follow-up video call. Please keep your documents ready.
             </p>
           </div>
 
