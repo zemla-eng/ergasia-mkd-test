@@ -1,67 +1,100 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import questionsData from "./questions.json";
-
-const signs = {
-  noTrucks: () => <svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#c0392b" strokeWidth="7"/><rect x="28" y="48" width="40" height="18" rx="3" fill="#333"/><rect x="28" y="38" width="24" height="14" rx="2" fill="#333"/><circle cx="35" cy="68" r="4" fill="#333"/><circle cx="60" cy="68" r="4" fill="#333"/><line x1="14" y1="86" x2="86" y2="14" stroke="#c0392b" strokeWidth="7" strokeLinecap="round"/></svg>,
-  weightLimit: t => <svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#c0392b" strokeWidth="7"/><text x="50" y="56" textAnchor="middle" fontSize="26" fontWeight="800" fill="#333">{t||"7.5t"}</text></svg>,
-  heightLimit: t => <svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#c0392b" strokeWidth="7"/><line x1="32" y1="28" x2="32" y2="72" stroke="#333" strokeWidth="3"/><line x1="68" y1="28" x2="68" y2="72" stroke="#333" strokeWidth="3"/><line x1="28" y1="30" x2="36" y2="30" stroke="#333" strokeWidth="3"/><line x1="28" y1="70" x2="36" y2="70" stroke="#333" strokeWidth="3"/><line x1="64" y1="30" x2="72" y2="30" stroke="#333" strokeWidth="3"/><line x1="64" y1="70" x2="72" y2="70" stroke="#333" strokeWidth="3"/><text x="50" y="56" textAnchor="middle" fontSize="22" fontWeight="800" fill="#333">{t||"4.0m"}</text></svg>,
-  noOvertakeTruck: () => <svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#c0392b" strokeWidth="7"/><rect x="18" y="44" width="26" height="14" rx="2" fill="#c0392b"/><rect x="18" y="38" width="16" height="9" rx="1" fill="#c0392b"/><circle cx="24" cy="60" r="3" fill="#c0392b"/><circle cx="38" cy="60" r="3" fill="#c0392b"/><rect x="52" y="44" width="26" height="14" rx="2" fill="#333"/><rect x="52" y="38" width="16" height="9" rx="1" fill="#333"/><circle cx="58" cy="60" r="3" fill="#333"/><circle cx="72" cy="60" r="3" fill="#333"/></svg>,
-  axleWeight: () => <svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#c0392b" strokeWidth="7"/><line x1="30" y1="55" x2="70" y2="55" stroke="#333" strokeWidth="4"/><circle cx="38" cy="62" r="5" fill="none" stroke="#333" strokeWidth="3"/><circle cx="62" cy="62" r="5" fill="none" stroke="#333" strokeWidth="3"/><text x="50" y="42" textAnchor="middle" fontSize="20" fontWeight="800" fill="#333">10t</text></svg>,
-  envZone: () => <svg viewBox="0 0 100 100" width="120" height="120"><rect x="4" y="4" width="92" height="92" rx="8" fill="#fff" stroke="#333" strokeWidth="3"/><circle cx="50" cy="42" r="22" fill="#4caf50"/><text x="50" y="48" textAnchor="middle" fontSize="12" fontWeight="700" fill="#fff">EURO</text><text x="50" y="82" textAnchor="middle" fontSize="11" fontWeight="700" fill="#333">Umweltzone</text></svg>,
-  tunnelCatE: () => <svg viewBox="0 0 120 100" width="140" height="120"><rect x="2" y="2" width="116" height="96" rx="6" fill="#1565c0"/><path d="M20 80 L20 35 Q60 10 100 35 L100 80 Z" fill="#fff"/><rect x="45" y="25" width="30" height="22" rx="4" fill="#f57c00"/><text x="60" y="42" textAnchor="middle" fontSize="16" fontWeight="800" fill="#fff">E</text><rect x="35" y="60" width="50" height="16" rx="3" fill="#333"/><circle cx="45" cy="78" r="4" fill="#333"/><circle cx="75" cy="78" r="4" fill="#333"/></svg>,
-  dangerousGoods: () => <svg viewBox="0 0 100 100" width="120" height="120"><rect x="10" y="10" width="56" height="56" fill="#f57c00" stroke="#333" strokeWidth="3" transform="rotate(45 38 38)"/><text x="50" y="45" textAnchor="middle" fontSize="26" fontWeight="900" fill="#333">3</text><text x="50" y="65" textAnchor="middle" fontSize="10" fontWeight="600" fill="#333">1203</text></svg>,
-  truckSpeedLimit: () => <svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#c0392b" strokeWidth="7"/><text x="50" y="60" textAnchor="middle" fontSize="36" fontWeight="900" fill="#333">80</text></svg>,
-  widthLimit: t => <svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#c0392b" strokeWidth="7"/><line x1="30" y1="28" x2="30" y2="72" stroke="#333" strokeWidth="3"/><line x1="70" y1="28" x2="70" y2="72" stroke="#333" strokeWidth="3"/><line x1="26" y1="30" x2="34" y2="30" stroke="#333" strokeWidth="2"/><line x1="26" y1="70" x2="34" y2="70" stroke="#333" strokeWidth="2"/><line x1="66" y1="30" x2="74" y2="30" stroke="#333" strokeWidth="2"/><line x1="66" y1="70" x2="74" y2="70" stroke="#333" strokeWidth="2"/><text x="50" y="56" textAnchor="middle" fontSize="22" fontWeight="800" fill="#333">{t||"2.5m"}</text></svg>,
-  truckParking: () => <svg viewBox="0 0 120 100" width="140" height="120"><rect x="2" y="2" width="116" height="96" rx="6" fill="#1565c0"/><text x="60" y="45" textAnchor="middle" fontSize="42" fontWeight="900" fill="#fff">P</text><rect x="35" y="58" width="50" height="16" rx="3" fill="#fff"/><rect x="35" y="52" width="30" height="10" rx="2" fill="#fff"/><circle cx="42" cy="76" r="4" fill="#fff"/><circle cx="72" cy="76" r="4" fill="#fff"/></svg>,
-  lengthLimit: t => <svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#c0392b" strokeWidth="7"/><line x1="22" y1="50" x2="78" y2="50" stroke="#333" strokeWidth="3"/><line x1="24" y1="42" x2="24" y2="58" stroke="#333" strokeWidth="3"/><line x1="76" y1="42" x2="76" y2="58" stroke="#333" strokeWidth="3"/><text x="50" y="38" textAnchor="middle" fontSize="18" fontWeight="800" fill="#333">{t||"18.75m"}</text></svg>,
-  noEntry: () => <svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#c0392b"/><rect x="22" y="43" width="56" height="14" rx="2" fill="#fff"/></svg>,
-  nightBan: () => <svg viewBox="0 0 120 100" width="140" height="120"><rect x="2" y="2" width="116" height="96" rx="6" fill="#fff" stroke="#c0392b" strokeWidth="5"/><rect x="25" y="40" width="36" height="16" rx="3" fill="#333"/><rect x="25" y="30" width="22" height="14" rx="2" fill="#333"/><circle cx="32" cy="58" r="4" fill="#333"/><circle cx="54" cy="58" r="4" fill="#333"/><text x="85" y="55" textAnchor="middle" fontSize="18" fontWeight="700" fill="#333">22-6</text><line x1="8" y1="92" x2="112" y2="8" stroke="#c0392b" strokeWidth="5" strokeLinecap="round"/></svg>,
-  roundabout: () => <svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#1565c0" stroke="#0d47a1" strokeWidth="2"/><path d="M 38 68 A 20 20 0 0 1 32 42" fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round"/><polygon points="28,36 38,42 32,48" fill="#fff"/><path d="M 62 32 A 20 20 0 0 1 68 58" fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round"/><polygon points="72,64 62,58 68,52" fill="#fff"/><path d="M 44 38 A 20 20 0 0 1 68 42" fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round"/><polygon points="72,36 68,48 62,38" fill="#fff"/></svg>,
-  oneWay: () => <svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#1565c0" stroke="#0d47a1" strokeWidth="2"/><line x1="50" y1="72" x2="50" y2="30" stroke="#fff" strokeWidth="12" strokeLinecap="round"/><polygon points="50,18 32,40 68,40" fill="#fff"/></svg>,
-  priorityRoad: () => <svg viewBox="0 0 100 100" width="120" height="120"><rect x="22" y="22" width="40" height="40" rx="3" fill="#f5f0e0" stroke="#555" strokeWidth="3" transform="rotate(45 42 42)"/><rect x="28" y="28" width="28" height="28" rx="2" fill="#f5a623" stroke="#333" strokeWidth="2" transform="rotate(45 42 42)"/></svg>,
-  endPriority: () => <svg viewBox="0 0 100 100" width="120" height="120"><rect x="22" y="22" width="40" height="40" rx="3" fill="#f5f0e0" stroke="#555" strokeWidth="3" transform="rotate(45 42 42)"/><rect x="28" y="28" width="28" height="28" rx="2" fill="#f5a623" stroke="#333" strokeWidth="2" transform="rotate(45 42 42)"/><line x1="22" y1="72" x2="64" y2="16" stroke="#333" strokeWidth="5" strokeLinecap="round"/></svg>,
-  giveWay: () => <svg viewBox="0 0 100 100" width="120" height="120"><polygon points="50,88 6,18 94,18" fill="#fff" stroke="#c0392b" strokeWidth="6" strokeLinejoin="round"/></svg>,
-  noUturn: () => <svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#c0392b" strokeWidth="7"/><path d="M38 70 L38 42 A14 14 0 0 1 66 42 L66 52" fill="none" stroke="#333" strokeWidth="5" strokeLinecap="round"/><polygon points="58,52 66,64 74,52" fill="#333"/><line x1="16" y1="84" x2="84" y2="16" stroke="#c0392b" strokeWidth="7" strokeLinecap="round"/></svg>,
-  endAllRestrictions: () => <svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#888" strokeWidth="3"/><line x1="20" y1="78" x2="80" y2="22" stroke="#777" strokeWidth="3"/><line x1="24" y1="80" x2="84" y2="24" stroke="#777" strokeWidth="3"/><line x1="16" y1="76" x2="76" y2="20" stroke="#777" strokeWidth="3"/></svg>,
-  textSign: () => <svg viewBox="0 0 140 80" width="160" height="100"><rect x="2" y="2" width="136" height="76" rx="6" fill="#f5a623"/><text x="70" y="34" textAnchor="middle" fontSize="16" fontWeight="800" fill="#333">Umleitung</text><text x="70" y="56" textAnchor="middle" fontSize="12" fontWeight="600" fill="#333">(= Detour)</text></svg>,
-  noAllVehicles: () => <svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#f5f0e8" stroke="#c0392b" strokeWidth="7"/></svg>,
-  priorityIntersection: () => <svg viewBox="0 0 100 100" width="120" height="120"><polygon points="50,6 94,88 6,88" fill="#fff" stroke="#c0392b" strokeWidth="5" strokeLinejoin="round"/><line x1="50" y1="30" x2="50" y2="72" stroke="#333" strokeWidth="6" strokeLinecap="round"/><line x1="34" y1="55" x2="66" y2="55" stroke="#333" strokeWidth="6" strokeLinecap="round"/><line x1="50" y1="55" x2="50" y2="72" stroke="#333" strokeWidth="8" strokeLinecap="round"/></svg>,
-  priorityOverOncoming: () => <svg viewBox="0 0 100 120" width="100" height="120"><rect x="8" y="4" width="84" height="112" rx="6" fill="#1565c0" stroke="#0d47a1" strokeWidth="2"/><line x1="55" y1="96" x2="55" y2="32" stroke="#fff" strokeWidth="10" strokeLinecap="round"/><polygon points="55,20 40,40 70,40" fill="#fff"/><line x1="38" y1="24" x2="38" y2="80" stroke="#c0392b" strokeWidth="8" strokeLinecap="round"/><polygon points="38,92 28,76 48,76" fill="#c0392b"/></svg>,
-  deadEnd: () => <svg viewBox="0 0 100 100" width="120" height="120"><rect x="8" y="8" width="84" height="84" rx="6" fill="#1565c0" stroke="#0d47a1" strokeWidth="2"/><rect x="42" y="40" width="16" height="36" rx="0" fill="#fff"/><rect x="26" y="34" width="48" height="14" rx="0" fill="#c0392b"/></svg>,
-  noStopping: () => <svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#1565c0" stroke="#c0392b" strokeWidth="7"/><line x1="20" y1="20" x2="80" y2="80" stroke="#c0392b" strokeWidth="7" strokeLinecap="round"/><line x1="80" y1="20" x2="20" y2="80" stroke="#c0392b" strokeWidth="7" strokeLinecap="round"/></svg>,
-  noParking: () => <svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#1565c0" stroke="#c0392b" strokeWidth="7"/><line x1="20" y1="80" x2="80" y2="20" stroke="#c0392b" strokeWidth="7" strokeLinecap="round"/></svg>
+const signs={noTrucks:()=><svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#c0392b" strokeWidth="7"/><rect x="28" y="48" width="40" height="18" rx="3" fill="#333"/><rect x="28" y="38" width="24" height="14" rx="2" fill="#333"/><circle cx="35" cy="68" r="4" fill="#333"/><circle cx="60" cy="68" r="4" fill="#333"/><line x1="14" y1="86" x2="86" y2="14" stroke="#c0392b" strokeWidth="7" strokeLinecap="round"/></svg>,weightLimit:t=><svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#c0392b" strokeWidth="7"/><text x="50" y="56" textAnchor="middle" fontSize="26" fontWeight="800" fill="#333">{t||"7.5t"}</text></svg>,heightLimit:t=><svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#c0392b" strokeWidth="7"/><line x1="32" y1="28" x2="32" y2="72" stroke="#333" strokeWidth="3"/><line x1="68" y1="28" x2="68" y2="72" stroke="#333" strokeWidth="3"/><line x1="28" y1="30" x2="36" y2="30" stroke="#333" strokeWidth="3"/><line x1="28" y1="70" x2="36" y2="70" stroke="#333" strokeWidth="3"/><line x1="64" y1="30" x2="72" y2="30" stroke="#333" strokeWidth="3"/><line x1="64" y1="70" x2="72" y2="70" stroke="#333" strokeWidth="3"/><text x="50" y="56" textAnchor="middle" fontSize="22" fontWeight="800" fill="#333">{t||"4.0m"}</text></svg>,noOvertakeTruck:()=><svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#c0392b" strokeWidth="7"/><rect x="18" y="44" width="26" height="14" rx="2" fill="#c0392b"/><rect x="18" y="38" width="16" height="9" rx="1" fill="#c0392b"/><circle cx="24" cy="60" r="3" fill="#c0392b"/><circle cx="38" cy="60" r="3" fill="#c0392b"/><rect x="52" y="44" width="26" height="14" rx="2" fill="#333"/><rect x="52" y="38" width="16" height="9" rx="1" fill="#333"/><circle cx="58" cy="60" r="3" fill="#333"/><circle cx="72" cy="60" r="3" fill="#333"/></svg>,axleWeight:()=><svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#c0392b" strokeWidth="7"/><line x1="30" y1="55" x2="70" y2="55" stroke="#333" strokeWidth="4"/><circle cx="38" cy="62" r="5" fill="none" stroke="#333" strokeWidth="3"/><circle cx="62" cy="62" r="5" fill="none" stroke="#333" strokeWidth="3"/><text x="50" y="42" textAnchor="middle" fontSize="20" fontWeight="800" fill="#333">10t</text></svg>,envZone:()=><svg viewBox="0 0 100 100" width="120" height="120"><rect x="4" y="4" width="92" height="92" rx="8" fill="#fff" stroke="#333" strokeWidth="3"/><circle cx="50" cy="42" r="22" fill="#4caf50"/><text x="50" y="48" textAnchor="middle" fontSize="12" fontWeight="700" fill="#fff">EURO</text><text x="50" y="82" textAnchor="middle" fontSize="11" fontWeight="700" fill="#333">Umweltzone</text></svg>,tunnelCatE:()=><svg viewBox="0 0 120 100" width="140" height="120"><rect x="2" y="2" width="116" height="96" rx="6" fill="#1565c0"/><path d="M20 80 L20 35 Q60 10 100 35 L100 80 Z" fill="#fff"/><rect x="45" y="25" width="30" height="22" rx="4" fill="#f57c00"/><text x="60" y="42" textAnchor="middle" fontSize="16" fontWeight="800" fill="#fff">E</text><rect x="35" y="60" width="50" height="16" rx="3" fill="#333"/><circle cx="45" cy="78" r="4" fill="#333"/><circle cx="75" cy="78" r="4" fill="#333"/></svg>,dangerousGoods:()=><svg viewBox="0 0 100 100" width="120" height="120"><rect x="10" y="10" width="56" height="56" fill="#f57c00" stroke="#333" strokeWidth="3" transform="rotate(45 38 38)"/><text x="50" y="45" textAnchor="middle" fontSize="26" fontWeight="900" fill="#333">3</text><text x="50" y="65" textAnchor="middle" fontSize="10" fontWeight="600" fill="#333">1203</text></svg>,truckSpeedLimit:()=><svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#c0392b" strokeWidth="7"/><text x="50" y="60" textAnchor="middle" fontSize="36" fontWeight="900" fill="#333">80</text></svg>,widthLimit:t=><svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#c0392b" strokeWidth="7"/><line x1="30" y1="28" x2="30" y2="72" stroke="#333" strokeWidth="3"/><line x1="70" y1="28" x2="70" y2="72" stroke="#333" strokeWidth="3"/><line x1="26" y1="30" x2="34" y2="30" stroke="#333" strokeWidth="2"/><line x1="26" y1="70" x2="34" y2="70" stroke="#333" strokeWidth="2"/><line x1="66" y1="30" x2="74" y2="30" stroke="#333" strokeWidth="2"/><line x1="66" y1="70" x2="74" y2="70" stroke="#333" strokeWidth="2"/><text x="50" y="56" textAnchor="middle" fontSize="22" fontWeight="800" fill="#333">{t||"2.5m"}</text></svg>,truckParking:()=><svg viewBox="0 0 120 100" width="140" height="120"><rect x="2" y="2" width="116" height="96" rx="6" fill="#1565c0"/><text x="60" y="45" textAnchor="middle" fontSize="42" fontWeight="900" fill="#fff">P</text><rect x="35" y="58" width="50" height="16" rx="3" fill="#fff"/><rect x="35" y="52" width="30" height="10" rx="2" fill="#fff"/><circle cx="42" cy="76" r="4" fill="#fff"/><circle cx="72" cy="76" r="4" fill="#fff"/></svg>,lengthLimit:t=><svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#c0392b" strokeWidth="7"/><line x1="22" y1="50" x2="78" y2="50" stroke="#333" strokeWidth="3"/><line x1="24" y1="42" x2="24" y2="58" stroke="#333" strokeWidth="3"/><line x1="76" y1="42" x2="76" y2="58" stroke="#333" strokeWidth="3"/><text x="50" y="38" textAnchor="middle" fontSize="18" fontWeight="800" fill="#333">{t||"18.75m"}</text></svg>,noEntry:()=><svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#c0392b"/><rect x="22" y="43" width="56" height="14" rx="2" fill="#fff"/></svg>,nightBan:()=><svg viewBox="0 0 120 100" width="140" height="120"><rect x="2" y="2" width="116" height="96" rx="6" fill="#fff" stroke="#c0392b" strokeWidth="5"/><rect x="25" y="40" width="36" height="16" rx="3" fill="#333"/><rect x="25" y="30" width="22" height="14" rx="2" fill="#333"/><circle cx="32" cy="58" r="4" fill="#333"/><circle cx="54" cy="58" r="4" fill="#333"/><text x="85" y="55" textAnchor="middle" fontSize="18" fontWeight="700" fill="#333">22-6</text><line x1="8" y1="92" x2="112" y2="8" stroke="#c0392b" strokeWidth="5" strokeLinecap="round"/></svg>,roundabout:()=> <img src="data:image/png;base64,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" alt="Roundabout sign" style={{width:"120px",height:"120px",objectFit:"contain",display:"block"}}/>,oneWay:()=><svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#1565c0" stroke="#0d47a1" strokeWidth="2"/><line x1="50" y1="72" x2="50" y2="30" stroke="#fff" strokeWidth="12" strokeLinecap="round"/><polygon points="50,18 32,40 68,40" fill="#fff"/></svg>,priorityRoad:()=><svg viewBox="0 0 100 100" width="120" height="120"><rect x="22" y="22" width="40" height="40" rx="3" fill="#f5f0e0" stroke="#555" strokeWidth="3" transform="rotate(45 42 42)"/><rect x="28" y="28" width="28" height="28" rx="2" fill="#f5a623" stroke="#333" strokeWidth="2" transform="rotate(45 42 42)"/></svg>,endPriority:()=><svg viewBox="0 0 100 100" width="120" height="120"><rect x="22" y="22" width="40" height="40" rx="3" fill="#f5f0e0" stroke="#555" strokeWidth="3" transform="rotate(45 42 42)"/><rect x="28" y="28" width="28" height="28" rx="2" fill="#f5a623" stroke="#333" strokeWidth="2" transform="rotate(45 42 42)"/><line x1="22" y1="72" x2="64" y2="16" stroke="#333" strokeWidth="5" strokeLinecap="round"/></svg>,giveWay:()=><svg viewBox="0 0 100 100" width="120" height="120"><polygon points="50,88 6,18 94,18" fill="#fff" stroke="#c0392b" strokeWidth="6" strokeLinejoin="round"/></svg>,noUturn:()=><svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#c0392b" strokeWidth="7"/><path d="M38 70 L38 42 A14 14 0 0 1 66 42 L66 52" fill="none" stroke="#333" strokeWidth="5" strokeLinecap="round"/><polygon points="58,52 66,64 74,52" fill="#333"/><line x1="16" y1="84" x2="84" y2="16" stroke="#c0392b" strokeWidth="7" strokeLinecap="round"/></svg>,endAllRestrictions:()=><svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#888" strokeWidth="3"/><line x1="20" y1="78" x2="80" y2="22" stroke="#777" strokeWidth="3"/><line x1="24" y1="80" x2="84" y2="24" stroke="#777" strokeWidth="3"/><line x1="16" y1="76" x2="76" y2="20" stroke="#777" strokeWidth="3"/></svg>,textSign:()=><svg viewBox="0 0 140 80" width="160" height="100"><rect x="2" y="2" width="136" height="76" rx="6" fill="#f5a623"/><text x="70" y="34" textAnchor="middle" fontSize="16" fontWeight="800" fill="#333">Umleitung</text><text x="70" y="56" textAnchor="middle" fontSize="12" fontWeight="600" fill="#333">(= Detour)</text></svg>,tunnelCatE:()=><svg viewBox="0 0 120 100" width="140" height="120"><rect x="2" y="2" width="116" height="96" rx="6" fill="#1565c0"/><path d="M20 80 L20 35 Q60 10 100 35 L100 80 Z" fill="#fff"/><rect x="45" y="25" width="30" height="22" rx="4" fill="#f57c00"/><text x="60" y="42" textAnchor="middle" fontSize="16" fontWeight="800" fill="#fff">E</text><rect x="35" y="60" width="50" height="16" rx="3" fill="#333"/><circle cx="45" cy="78" r="4" fill="#333"/><circle cx="75" cy="78" r="4" fill="#333"/></svg>,noAllVehicles:()=><svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#f5f0e8" stroke="#c0392b" strokeWidth="7"/></svg>,priorityIntersection:()=><svg viewBox="0 0 100 100" width="120" height="120"><polygon points="50,6 94,88 6,88" fill="#fff" stroke="#c0392b" strokeWidth="5" strokeLinejoin="round"/><line x1="50" y1="30" x2="50" y2="72" stroke="#333" strokeWidth="6" strokeLinecap="round"/><line x1="34" y1="55" x2="66" y2="55" stroke="#333" strokeWidth="6" strokeLinecap="round"/><line x1="50" y1="55" x2="50" y2="72" stroke="#333" strokeWidth="8" strokeLinecap="round"/></svg>,priorityOverOncoming:()=><svg viewBox="0 0 100 120" width="100" height="120"><rect x="8" y="4" width="84" height="112" rx="6" fill="#1565c0" stroke="#0d47a1" strokeWidth="2"/><line x1="55" y1="96" x2="55" y2="32" stroke="#fff" strokeWidth="10" strokeLinecap="round"/><polygon points="55,20 40,40 70,40" fill="#fff"/><line x1="38" y1="24" x2="38" y2="80" stroke="#c0392b" strokeWidth="8" strokeLinecap="round"/><polygon points="38,92 28,76 48,76" fill="#c0392b"/></svg>,deadEnd:()=><svg viewBox="0 0 100 100" width="120" height="120"><rect x="8" y="8" width="84" height="84" rx="6" fill="#1565c0" stroke="#0d47a1" strokeWidth="2"/><rect x="42" y="40" width="16" height="36" rx="0" fill="#fff"/><rect x="26" y="34" width="48" height="14" rx="0" fill="#c0392b"/></svg>,noStopping:()=><svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#1565c0" stroke="#c0392b" strokeWidth="7"/><line x1="20" y1="20" x2="80" y2="80" stroke="#c0392b" strokeWidth="7" strokeLinecap="round"/><line x1="80" y1="20" x2="20" y2="80" stroke="#c0392b" strokeWidth="7" strokeLinecap="round"/></svg>,noParking:()=><svg viewBox="0 0 100 100" width="120" height="120"><circle cx="50" cy="50" r="46" fill="#1565c0" stroke="#c0392b" strokeWidth="7"/><line x1="20" y1="80" x2="80" y2="20" stroke="#c0392b" strokeWidth="7" strokeLinecap="round"/></svg>};
+const SECTIONS=[
+  {id:"aetr",title:"Tachograph & AETR",icon:"\u23F1\uFE0F",desc:"Scenario questions - driving times, breaks, and rest"},
+  {id:"cmr",title:"CMR & Administration",icon:"\uD83D\uDCCB",desc:"Documents, customs paperwork, and liability"},
+  {id:"tolls",title:"Tolls & EU Navigation",icon:"\uD83D\uDEE3\uFE0F",desc:"Toll systems and low-emission zones"},
+  {id:"loading",title:"Loading & Weight Distribution",icon:"\u2696\uFE0F",desc:"Load placement and securing"},
+  {id:"signs",title:"Road Signs",icon:"\uD83D\uDEA6",desc:"Road signs relevant for International trailer drivers"},
+  {id:"personality",title:"Driver Work Style",icon:"\uD83E\uDDE0",desc:"How you usually act in real work situations"}
+];
+const QUESTIONS={
+  aetr:[
+    {q:"A driver starts driving at 06:00. They drive 3 hours, take a 15-minute break, and then drive another 2 hours. How many minutes of rest must they take now?",options:["15 minutes","30 minutes (the second part of a split break)","45 minutes (a completely new break)","None, they still have 30 minutes of driving left"],correct:1,explanation:"A split break must be taken as 15 minutes + 30 minutes. After 3h + 2h = 5h of driving, the 30-minute part should already have been completed before exceeding 4.5 hours."},
+    {q:"A driver has already driven 56 hours this week (the maximum). How many hours can they drive next week at most?",options:["56 hours","45 hours","34 hours","44 hours"],correct:2,explanation:"The two-week limit is 90 hours. If the driver did 56 hours in week one, the maximum for week two is 90 - 56 = 34 hours."},
+    {q:"In multi-manning (two drivers), what is the minimum daily rest and in what time window?",options:["11h within 24h","9h within 24h","9h within 30h","11h within 30h"],correct:2,explanation:"With multi-manning, the driver must take at least 9 hours of rest within a 30-hour window."},
+    {q:"A driver boards a ferry at 22:00 for an 8-hour crossing and has a cabin. What applies?",options:["The whole time counts as driving","The whole time counts as other work","Daily rest may be interrupted max. 2 times, max. 1 hour total for boarding/disembarking, the rest counts as rest","The whole time counts as availability"],correct:2,explanation:"Under Article 9 of Regulation 561/2006, a rest period on a ferry may be interrupted a maximum of two times for a total of up to one hour. The driver must have access to a bunk or cabin."},
+    {q:"A reduced weekly rest of 24 hours was taken. By when must the compensation be added back?",options:["By the end of the following week","By the end of the 3rd week, in one block attached to a rest period of at least 9 hours","No compensation is needed if the next weekly rest is 45 hours","Within 6 weeks in separate parts"],correct:1,explanation:"The missing 21 hours must be compensated by the end of the third week and attached in one block to a rest period of at least 9 hours."},
+    {q:"Driving starts at 06:00. At 09:30 the driver checks the load for 20 minutes. At 10:15 there is a 15-minute break. At 12:00 there is a 30-minute break. Is there a violation?",options:["No - 15 + 30 = 45 minutes is fine","Yes - checking the load is not a break, so cumulative driving exceeded 4.5 hours","No - 20 + 15 + 30 = 65 minutes is enough","Yes - but only by 5 minutes"],correct:1,explanation:"A load check is other work, not a break. Driving time is 3.5h + 1.5h = 5h before the 30-minute part of the split break, so this is a violation."},
+    {q:"How many reduced weekly rests (24h) may be taken in a row?",options:["Unlimited","Maximum 2, then at least 1 regular weekly rest of 45h must follow","Maximum 3","Only 1, then 45h immediately"],correct:1,explanation:"A maximum of 2 reduced weekly rests may be taken in a row. After that, a regular 45-hour weekly rest must follow, plus compensation."},
+    {q:"What does 'availability' mean on a tachograph?",options:["The driver is waiting for loading and knows the expected duration in advance","The driver is sleeping in the cab","The driver is driving the vehicle","The driver is taking a break whenever they choose"],correct:0,explanation:"Availability means the driver is not driving and not doing other work, but remains available. For example, waiting with a known expected duration. It does not count as rest."}
+  ],
+  cmr:[
+    {q:"The sender refuses to record reservations in CMR box 18. What do you do?",options:["Load the goods and write nothing","Refuse to load","Write the reservation in box 18 yourself, take photos, and inform the carrier","Load without reservations"],correct:2,explanation:"The driver may record reservations unilaterally. The key is photo evidence and written notice to the carrier."},
+    {q:"Who is responsible for damage during transport under the CMR Convention?",options:["Always the driver","The carrier, unless they prove grounds for exemption under Article 17(2)","The sender","The insurance company"],correct:1,explanation:"Under Article 17 CMR, the carrier is responsible unless they can prove grounds for exemption such as the fault of the claimant, inherent defect of the goods, or unavoidable circumstances."},
+    {q:"What is a TIR carnet and when is it used?",options:["It replaces the CMR consignment note","It is a customs transit document used for transport through countries without customs checks at every border - the CMR is still required","It is mandatory only for ADR loads","It is no longer used"],correct:1,explanation:"TIR is a customs transit document. The goods are sealed and usually checked only at departure and destination. The CMR remains a separate transport document."},
+    {q:"You receive a sealed container. What must be written in the CMR?",options:["A full description of the contents","'Contents unknown' only","Container number, seal number, and a reservation that it is under the sender's seal","Nothing special"],correct:2,explanation:"You should record the container number, the seal number, and a reservation in box 18. Otherwise you may assume responsibility for goods you did not inspect."},
+    {q:"Three pallets out of twenty are missing at delivery and the consignee refuses to write it down. What do you do?",options:["Sign without any note","Refuse to sign anything","Write the note in box 24, do not sign a clean CMR, and inform the carrier in writing","Leave without any signature"],correct:2,explanation:"Box 24 is used for remarks at delivery. Never sign a clean CMR when there is a problem. Add written notice and photo evidence."},
+    {q:"What is the difference between T1 and T2?",options:["T1 is for EU goods and T2 for non-EU goods","T1 = non-EU goods, T2 = EU goods - both are customs transit documents","T1 means import and T2 means export","They are the same thing"],correct:1,explanation:"T1 is used for transit of non-EU goods. T2 is used for transit of EU goods, for example through a non-EU country like Switzerland."},
+    {q:"What is an EUR.1 certificate?",options:["A customs transit document","A preferential origin certificate that may allow reduced or zero customs duty","An invoice for customs purposes","A VAT confirmation"],correct:1,explanation:"EUR.1 confirms preferential origin and can allow lower customs duty under trade agreements."},
+    {q:"For ADR Class 3, what does NOT have to be in the cab?",options:["Written instructions","A fire extinguisher","The driver's ADR certificate","A weighing scale"],correct:3,explanation:"A weighing scale is not part of ADR equipment. Mandatory items include written instructions, extinguishers, ADR certificate, high-visibility vest, flashlight, and wheel chocks."}
+  ],
+  tolls:[
+    {q:"Which countries on the Bratislava to Lisbon route use GNSS / satellite tolling?",options:["Germany, Austria, Czech Republic","Germany, Hungary, Slovakia, Czech Republic","All EU countries","Germany and Belgium"],correct:1,explanation:"Satellite / GNSS systems include Germany (Toll Collect), Hungary (HU-GO), Slovakia (SkyToll), and Czech Republic (CzechToll). Austria uses GO-Box (DSRC). France, Spain, Italy, and Portugal mainly use toll gates."},
+    {q:"A Euro VI truck is going to Antwerp. What is needed in addition to the toll unit?",options:["Nothing - Euro VI is enough","LEZ registration - online registration is required even for Euro VI","A Belgian sticker","Police permission"],correct:1,explanation:"Belgian low-emission zones require online registration even for Euro VI vehicles. Without registration, there can be a fine."},
+    {q:"How is LSVA in Switzerland different?",options:["It is a standard motorway toll","It applies on ALL roads and depends on kilometres, weight, and emission class, so it is significantly more expensive","It only applies to transit traffic","It only applies to mountain passes"],correct:1,explanation:"LSVA applies for every kilometre on any road in Switzerland and depends on weight, emission class, and distance."},
+    {q:"You are going to Norway for the first time. Which statement is correct?",options:["Norway is in the EU","AutoPASS OBU is used, registration is required, ferries are part of the system, and there is no interoperability with EU toll systems","There is no toll in Norway","Toll Collect is enough"],correct:1,explanation:"Norway is not in the EU. AutoPASS and registration are required, and ferry charges can be included in the tolling system."},
+    {q:"What caused the biggest increase in German toll costs from December 2023?",options:["VAT","The CO2 surcharge based on the emission class","An extension of the road network","New technology"],correct:1,explanation:"The CO2 surcharge significantly increased German toll costs, especially for Euro VI vehicles."},
+    {q:"What happens if you lose your ticket on an Italian motorway?",options:["Nothing, the OBU replaces it","You may be charged from the farthest possible entry point - the maximum amount","There is always a fixed 50 EUR fine","You must drive back"],correct:1,explanation:"If the ticket is lost, the charge is usually calculated from the farthest possible entry point. With Telepass this issue normally does not arise."},
+    {q:"What is EETS?",options:["One single toll system for the whole EU that already works everywhere","An EU interoperability goal - some providers offer multi-country OBUs, but it is still not fully unified everywhere","The European motorway police","A penalty system"],correct:1,explanation:"EETS is the EU concept for toll interoperability. Some providers offer multi-country solutions, but it is still not fully unified everywhere."},
+    {q:"A Euro V truck is going to Stuttgart. What applies?",options:["There is no low-emission zone","A green sticker is always enough","Stuttgart had stricter local rules, including restrictions on Euro V diesel vehicles","A yellow sticker is enough"],correct:2,explanation:"Stuttgart became known for particularly strict local environmental restrictions, including limitations for Euro V diesel vehicles beyond the standard Umweltzone rules."}
+  ],
+  loading:[
+    {q:"What is the maximum load for a tri-axle trailer with wheelbase >= 1.3 m?",options:["18t","21t","24t","27t"],correct:2,explanation:">= 1.3 m wheelbase means a maximum of 24 tonnes. If it is below 1.3 m, the limit is 21 tonnes."},
+    {q:"You have 22 tonnes on 10 pallets. Where should the heaviest pallets go?",options:["At the rear","At the front near the kingpin only","The heaviest pallets over the trailer axles and near the kingpin, lighter ones at the ends","It does not matter as long as total weight is below 40t"],correct:2,explanation:"The target is kingpin load around 10-12t and trailer tri-axle max 24t. The heaviest pallets should be placed over the axles and near the kingpin, lighter ones toward the ends."},
+    {q:"According to EN 12195-1, what securing forces must be achieved as a percentage of cargo weight?",options:["50 / 30 / 30","80 / 50 / 50 (forward / sideways / rearward)","100 / 80 / 50","80 in all directions"],correct:1,explanation:"The usual rule is 80% forward, 50% sideways, and 50% rearward."},
+    {q:"Axle loads are 6.5t / 12.5t / 22t and total weight is 41t. How many violations are there?",options:["1 (total weight only)","2 (total weight + drive axle)","3 (total + drive axle + tri-axle)","1 (drive axle only)"],correct:1,explanation:"41t exceeds the 40t gross limit and 12.5t exceeds the 11.5t drive axle limit. 22t is still below 24t, so there are 2 violations."},
+    {q:"What is the correct way to secure steel coils?",options:["Vertically with straps only","Horizontally in a cradle with wedges, straps/chains, and anti-slip mat","Leaning against the trailer wall","With airbags only"],correct:1,explanation:"Steel coils should be transported horizontally in a cradle, secured with wedges, anti-slip material, and straps or chains."},
+    {q:"A tanker is filled to 50%. What is the specific risk?",options:["No special risk","Surge effect - liquid movement dramatically changes the center of gravity","Only a problem if there are no baffles","Only fuel consumption changes"],correct:1,explanation:"Surge effect is often worst around 40-60% filling. Baffles, smooth driving, and avoiding harsh maneuvers are important."},
+    {q:"Why is the coefficient of friction (mu) important?",options:["It describes tyre resistance","It describes friction between the load and the floor - lower mu means more securing is needed","It only affects braking distance","It only affects fuel consumption"],correct:1,explanation:"For example, wood on metal can be around 0.3, while anti-slip mats may increase it to around 0.6. Higher friction means fewer straps may be needed."},
+    {q:"What is the standard maximum GVW for a 5-axle combination in the EU?",options:["36t","38t","40t","44t"],correct:2,explanation:"The standard maximum is 40 tonnes. 44 tonnes may be allowed in some countries for combined transport."}
+  ],
+  signs:[
+    {q:"What does this sign mean?",sign:"noTrucks",options:["No stopping","No entry above a certain weight","No entry for goods vehicles / trucks","One-way street"],correct:2,explanation:"No entry for trucks or goods vehicles. The driver must use an alternative route."},
+    {q:"A red circle with '7.5t' - what does it apply to?",sign:"weightLimit",signArg:"7.5t",options:["Maximum cargo weight","Maximum gross vehicle / combination weight (GVW)","Maximum axle load","Minimum required weight"],correct:1,explanation:"It refers to the maximum gross vehicle or combination weight. Not cargo weight, not axle weight."},
+    {q:"A sign with '4.0m' - what must the driver know?",sign:"heightLimit",signArg:"4.0m",options:["Road width","Maximum height - the driver must know the exact height of the combination with the load","Distance to the bridge","Bridge clearance above water"],correct:1,explanation:"Height limit. A standard curtainsider is approximately 4.0m. Hitting a bridge causes catastrophic damage and criminal charges."},
+    {q:"What does this motorway sign with two trucks mean?",sign:"noOvertakeTruck",options:["No overtaking for all vehicles","No overtaking for trucks over 3.5t","Overtake on the right","Reduced speed only"],correct:1,explanation:"No overtaking for vehicles over 3.5t. Common in Germany, Austria, and France. Penalties are significant."},
+    {q:"What is the difference between this axle load sign and a normal weight limit sign?",sign:"axleWeight",options:["There is no difference","It refers to the load on one axle, important for bridges and weaker roads","It means cargo weight only","It applies only to rear axles"],correct:1,explanation:"An axle load limit refers to one axle only. Critical for bridges. The driver must know the weight distribution across all axles."},
+    {q:"'Umweltzone'. A Euro III vehicle without a sticker enters. What happens?",sign:"envZone",options:["Nothing, it is only for electric vehicles","A fine, because a green sticker is required (typically Euro 4 or above)","Nothing, it is only an information sign","It is part of the toll system"],correct:1,explanation:"Many Umweltzonen require a green sticker, typically Euro 4 or better. Entering without the required sticker results in a fine. Some cities like Stuttgart have even stricter local rules."},
+    {q:"An orange ADR plate with '3' on top and '1203' below - what does it mean?",sign:"dangerousGoods",options:["Registration number","ADR plate - 3 means flammable liquid, 1203 is the UN number for petrol/gasoline","Carrier ID number","Customs document"],correct:1,explanation:"On ADR orange plates, the top number identifies the hazard class (Kemler code) and the lower number is the UN number."},
+    {q:"A red circle with the number '80' - does this apply to trucks?",sign:"truckSpeedLimit",options:["No, trucks have their own separate limit","Yes, speed limit 80 km/h applies to all vehicles including trucks","It is only a recommendation","Only applies to cars"],correct:1,explanation:"This is a general speed limit of 80 km/h for all vehicles. Many countries also have default truck speed limits on motorways (e.g. 80 km/h in Germany, 90 km/h in France)."},
+    {q:"A sign showing '2.5m' with vertical bars - what does this mean for a truck?",sign:"widthLimit",signArg:"2.5m",options:["Height limit 2.5m","Width limit - your vehicle and load must not exceed 2.5m","Lane width information","Distance between bollards"],correct:1,explanation:"Width restriction. A standard trailer is 2.55m wide, so this sign means the truck cannot pass. Find an alternative route."},
+    {q:"A blue 'P' sign with a truck below it - what does this indicate?",sign:"truckParking",options:["Parking for cars only","Truck parking area - a designated rest or parking area for heavy vehicles","Petrol station ahead","Payment required for trucks"],correct:1,explanation:"Designated truck parking area. Essential for planning rest periods under AETR rules, especially in countries where truck parking is scarce."},
+    {q:"A sign showing '18.75m' with arrows on each end - what does this mean?",sign:"lengthLimit",signArg:"18.75m",options:["Distance to the next exit","Maximum vehicle or combination length allowed on this road","Height of an upcoming bridge","Width of the road"],correct:1,explanation:"Maximum vehicle length restriction. EU max: 16.50m for truck+trailer, 18.75m for road train. Common near narrow roads and urban areas."},
+    {q:"A white rectangle with a red border showing a truck and '22-6' - what does this mean?",sign:"nightBan",options:["Truck speed limit between 22:00 and 06:00","Night-time driving ban for trucks, typically between 22:00 and 06:00","Trucks must use lights between these hours","Truck loading hours only"],correct:1,explanation:"Night-time truck driving ban. Common in Austria, parts of Germany, and Switzerland. Trucks over 7.5t cannot drive during these hours. Heavy fines apply."},
+    {q:"A red circle with a white horizontal bar - what does this mean?",sign:"noEntry",options:["No parking","No entry - you must not enter from this direction","Road closed for maintenance","Speed limit ended"],correct:1,explanation:"No entry from this direction. Often placed at the exit of one-way streets. Entering means driving against traffic - extremely dangerous and heavily fined."},
+    {q:"What does this blue circular sign with white arrows mean?",sign:"roundabout",options:["Parking area ahead","Roundabout ahead - vehicles inside the circle have priority, enter by yielding","Turn around here","Circular highway interchange"],correct:1,explanation:"Roundabout. In most EU countries, vehicles already in the roundabout have priority. You must yield before entering. Use your indicator when exiting. Do not stop inside the roundabout."},
+    {q:"This blue circle with a white arrow pointing up - what must you do?",sign:"oneWay",options:["You can go in any direction","You must proceed straight ahead - mandatory direction","One-way street, traffic may also come from behind","This road leads to a motorway"],correct:1,explanation:"Mandatory direction - you must go straight ahead. Blue circles with white arrows are compulsory signs in Europe. They tell you which direction you MUST follow."},
+    {q:"A yellow diamond shape with a white border - what does this sign mean?",sign:"priorityRoad",options:["Warning - dangerous road ahead","You are on a priority road - you have right of way at intersections","Parking for taxis only","Construction zone ahead"],correct:1,explanation:"Priority road sign. You have right of way over vehicles on side roads at intersections. This continues until you see the end-of-priority sign."},
+    {q:"The same yellow diamond but with a black diagonal line through it - what does it mean?",sign:"endPriority",options:["Dangerous road ahead","End of priority road - you no longer automatically have right of way","One-way street ended","Speed limit ended"],correct:1,explanation:"End of priority road. After this sign, normal right-of-way rules apply (usually priority to the right in most EU countries). Pay extra attention at the next intersection."},
+    {q:"An inverted white triangle with a red border - what must you do?",sign:"giveWay",options:["Stop completely","Give way - you must yield to traffic on the main road before proceeding","Speed up to merge","Flash your lights to warn others"],correct:1,explanation:"Give way / yield sign. You must let all traffic on the main road pass before you enter. Unlike a stop sign, you do not need to stop completely if the road is clear, but you must be ready to stop."},
+    {q:"What does this sign with a U-turn arrow crossed out mean?",sign:"noUturn",options:["No left turn","No U-turn allowed at this location","No reversing","No parking"],correct:1,explanation:"No U-turn. Making a U-turn with a truck on a main road or motorway is extremely dangerous and can cause fatal accidents. This sign is strictly enforced."},
+    {q:"A white circle with grey diagonal lines - what does this mean?",sign:"endAllRestrictions",options:["Road closed","End of all previously applied restrictions - default national rules now apply","No parking zone","Slow zone ahead"],correct:1,explanation:"End of all restrictions. After this sign, all previous speed limits, overtaking bans, and other restrictions are cancelled. Default national rules apply (e.g. 50 km/h in towns, 80-130 km/h outside)."},
+    {q:"You see a yellow sign with the word 'Umleitung' on a German road. What does it mean?",sign:"textSign",options:["Name of the next town","Detour / diversion - follow this sign to reach your destination via an alternative route","Toll payment point ahead","Rest area ahead"],correct:1,explanation:"'Umleitung' means detour in German. Other important words: 'Ausfahrt' = exit, 'Einfahrt' = entrance, 'Déviation' (French) = detour. Recognising these words is essential when driving in countries where signs include local language text."},
+    {q:"A red circle with a plain white centre and no other symbol - what does it mean?",sign:"noAllVehicles",options:["Speed limit ended","No entry for all vehicles in both directions","Road surface is white/icy","Pedestrian zone only"],correct:1,explanation:"No entry for all vehicles in both directions. This is different from the 'no entry' sign (white bar on red) which prohibits entry from one direction only. This sign completely closes the road to all motor vehicles."},
+    {q:"A warning triangle with a bold cross shape inside - what does it mean?",sign:"priorityIntersection",options:["Hospital ahead","Priority intersection ahead - you have right of way at the next crossroads","Railroad crossing","Crosswind warning"],correct:1,explanation:"This sign warns you that you have priority at the next intersection. Side road traffic must yield to you. However, always approach with caution - not all drivers respect priority rules."},
+    {q:"A blue rectangle with a large white arrow going up and a smaller red arrow going down - what does it mean?",sign:"priorityOverOncoming",options:["One-way street","You have priority over oncoming traffic in a narrow section","Traffic light ahead","Motorway entrance"],correct:1,explanation:"Priority over oncoming traffic. Used on narrow roads, bridges, or construction zones where only one lane is available. Oncoming traffic must wait for you to pass. The white arrow (your direction) is larger because YOU have priority."},
+    {q:"A blue square with a white T-shape and a red bar at the top - what does it mean?",sign:"deadEnd",options:["Train station ahead","Dead end / cul-de-sac - the road ahead does not lead through","T-junction ahead","Bus stop"],correct:1,explanation:"Dead end (cul-de-sac). The road does not continue. For a truck driver, this is critical information - turning a truck around in a dead end can be extremely difficult or impossible. Always check your route in advance."},
+    {q:"A blue circle with a red border and a red X across it - what does it mean?",sign:"noStopping",options:["No parking between certain hours","No stopping at any time - you cannot stop even briefly","Crossroads ahead","No entry"],correct:1,explanation:"No stopping (Zákaz zastavenia). You cannot stop here at all, not even to drop off a passenger or check your load. This is stricter than 'no parking'. For truck drivers, this is important at loading zones and city centres."},
+    {q:"A blue circle with a red border and a single red diagonal line - what does it mean?",sign:"noParking",options:["No overtaking","No parking - you may stop briefly but not park","One-way street","No left turn"],correct:1,explanation:"No parking (Zákaz státia). You may stop briefly (e.g. to load/unload) but you cannot leave the vehicle parked. The difference from 'no stopping' (X) is important: one line = brief stop OK, X = no stopping at all."}
+  ]
 };
-
-const SECTIONS = [
-  {id:"aetr", title:"Tachograph & AETR", icon:"⏱️", desc:"Scenario questions - driving times, breaks, and rest"},
-  {id:"cmr", title:"CMR & Administration", icon:"📋", desc:"Documents, customs paperwork, and liability"},
-  {id:"tolls", title:"Tolls & EU Navigation", icon:"🛣️", desc:"Toll systems and low-emission zones"},
-  {id:"loading", title:"Loading & Weight Distribution", icon:"⚖️", desc:"Load placement and securing"},
-  {id:"signs", title:"Road Signs", icon:"🚦", desc:"Road signs relevant for International trailer drivers"},
-  {id:"personality", title:"Driver Work Style", icon:"🧠", desc:"How you usually act in real work situations"}
+const PERS=[
+  {q:"Someone hits your mirror in a parking area and drives away. What do you do?",options:["I get angry and look for them","I call the police immediately","I take photos, report it to dispatch, write a report, and continue","I repair it myself and say nothing"],scores:[0,1,3,1],trait:"stress"},
+  {q:"You have been on the road for 3 weeks. It is Friday and you are alone in Poland. How do you usually feel?",options:["Very bad","It is difficult, but I call my family and manage it","I am used to it and I have my routines","I enjoy the quiet"],scores:[0,1,3,2],trait:"independence"},
+  {q:"Dispatch changes your route 30 minutes before loading. What is your reaction?",options:["I get angry","I do not like it, but I accept it","No problem, I change the GPS and continue","I ignore it and drive the original route"],scores:[0,1,3,0],trait:"adaptability"},
+  {q:"A customs officer speaks only French. What do you do?",options:["I wait until someone speaks English","I use gestures only","I use a translator app, organise the documents calmly, and stay professional","I call dispatch immediately and do nothing else"],scores:[1,1,3,1],trait:"communication"},
+  {q:"It is 14:00, you are tired, your destination is 1.5 hours away, and your legal limit still allows you to continue. What do you do?",options:["I continue and drink coffee","I stop for 20 minutes, wash my face, recover, then continue","I continue even if my eyes are closing","I sleep and deliver tomorrow"],scores:[1,3,0,1],trait:"discipline"},
+  {q:"The customer claims damage, but you transported the load correctly. What do you do?",options:["I argue with them","I stay silent and sign anything","I stay calm, refuse unfair blame, use photos and CMR reservations, and call dispatch","I leave without any signature"],scores:[0,0,3,0],trait:"professionalism"}
 ];
-
-const QUESTIONS = questionsData;
-
-const PERS = [
-  {q:"Someone hits your mirror in a parking area and drives away. What do you do?", options:["I get angry and look for them","I call the police immediately","I take photos, report it to dispatch, write a report, and continue","I repair it myself and say nothing"], scores:[0,1,3,1], trait:"stress"},
-  {q:"You have been on the road for 3 weeks. It is Friday and you are alone in Poland. How do you usually feel?", options:["Very bad","It is difficult, but I call my family and manage it","I am used to it and I have my routines","I enjoy the quiet"], scores:[0,1,3,2], trait:"independence"},
-  {q:"Dispatch changes your route 30 minutes before loading. What is your reaction?", options:["I get angry","I do not like it, but I accept it","No problem, I change the GPS and continue","I ignore it and drive the original route"], scores:[0,1,3,0], trait:"adaptability"},
-  {q:"A customs officer speaks only French or German. What do you do?", options:["I wait until someone speaks English","I use gestures only","I use a translator app, organise the documents calmly, and stay professional","I call dispatch immediately and do nothing else"], scores:[1,1,3,1], trait:"communication"},
-  {q:"It is 14:00, you are tired, your destination is 1.5 hours away, and your legal limit still allows you to continue. What do you do?", options:["I continue and drink coffee","I stop for 20 minutes, wash my face, recover, then continue","I continue even if my eyes are closing","I sleep and deliver tomorrow"], scores:[1,3,0,1], trait:"discipline"},
-  {q:"The customer claims damage, but you transported the load correctly. What do you do?", options:["I argue with them","I stay silent and sign anything","I stay calm, refuse unfair blame, use photos and CMR reservations, and call dispatch","I leave without any signature"], scores:[0,0,3,0], trait:"professionalism"},
-  {q:"You get a 300€ fine for entering a LEZ zone without registration. What is your usual reaction?", options:["I get very angry and argue with the officer","I accept it and pay immediately","I stay calm, take photos of the fine, inform dispatch, and learn for next time","I ignore it and hope it goes away"], scores:[0,1,3,0], trait:"stress"},
-  {q:"You are on a tight schedule and suddenly see a night-driving ban (22-06) sign in Austria/Germany. What do you do?", options:["I keep driving anyway – I need to deliver","I stop immediately and find a safe parking even if it delays delivery","I call dispatch and ask what to do","I look for the next truck stop and take the mandatory rest"], scores:[0,1,2,3], trait:"discipline"}
-];
-
-const TL = { stress:"Stress handling", independence:"Independence", adaptability:"Adaptability", communication:"Communication", discipline:"Discipline", professionalism:"Professionalism" };
-
-function getGrade(k, p) {
-  if (k >= 82 && p >= 70) return "A";
-  if (k >= 65 && p >= 55) return "B";
-  if (k >= 45 && p >= 40) return "C";
-  return "D";
-}
+const TL={stress:"Stress handling",independence:"Independence",adaptability:"Adaptability",communication:"Communication",discipline:"Discipline",professionalism:"Professionalism"};
+function getGrade(k,p){if(k>=82&&p>=70)return"A";if(k>=65&&p>=55)return"B";if(k>=45&&p>=40)return"C";return"D";}
+const GI={
+  A:{color:"#1fa269",bg:"#eaf8f0",label:"Category A - Excellent",desc:"Very strong knowledge. Suitable for stronger clients and premium opportunities."},
+  B:{color:"#c98700",bg:"#fff7e6",label:"Category B - Good",desc:"Good knowledge. Usually suitable after a short introduction or check call."},
+  C:{color:"#e07b1f",bg:"#fff2e8",label:"Category C - Developing",desc:"Some areas need strengthening. We can help with a short preparation course to get you ready."},
+  D:{color:"#6b7280",bg:"#f3f4f6",label:"Category D - Learning Path",desc:"Your results show areas where more experience or preparation would help. This is completely normal - many excellent drivers started exactly where you are now. We recommend our free preparation materials to strengthen your knowledge, and you are welcome to retake the test at any time."}
+};
 
 function normalizePassportNumber(value = "") {
   return value.toUpperCase().replace(/[\s-]+/g, "").replace(/[^A-Z0-9]/g, "");
@@ -114,7 +147,10 @@ function buildPersonalityAnswerList(answers) {
 function blobToBase64(blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onloadend = () => resolve(typeof reader.result === "string" ? reader.result.split(",")[1] || "" : "");
+    reader.onloadend = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      resolve(result.split(",")[1] || "");
+    };
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
@@ -123,35 +159,49 @@ function blobToBase64(blob) {
 async function generatePdfBlobFromElement(element) {
   const [{ jsPDF }, html2canvasModule] = await Promise.all([import("jspdf"), import("html2canvas")]);
   const html2canvas = html2canvasModule.default;
-  const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#ffffff", scrollY: -window.scrollY });
+  const canvas = await html2canvas(element, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: "#ffffff",
+    scrollY: -window.scrollY,
+  });
+
   const imgData = canvas.toDataURL("image/png");
   const pdf = new jsPDF("p", "mm", "a4");
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
   const margin = 8;
   const usableWidth = pageWidth - margin * 2;
+  const usableHeight = pageHeight - margin * 2;
   const imgWidth = usableWidth;
   const imgHeight = (canvas.height * imgWidth) / canvas.width;
   let heightLeft = imgHeight;
   let position = margin;
 
-  pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
-  heightLeft -= pageHeight - margin * 2;
+  pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight, undefined, "FAST");
+  heightLeft -= usableHeight;
 
   while (heightLeft > 0) {
     pdf.addPage();
     position = margin - (imgHeight - heightLeft);
-    pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight - margin * 2;
+    pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight, undefined, "FAST");
+    heightLeft -= usableHeight;
   }
+
   return pdf.output("blob");
 }
 
 export default function DriverTest() {
   const searchParams = useMemo(() => new URLSearchParams(window.location.search), []);
-  const prefilledPassport = useMemo(() => normalizePassportNumber(searchParams.get("passport") || searchParams.get("passportNumber") || ""), [searchParams]);
+  const prefilledPassport = useMemo(
+    () => normalizePassportNumber(searchParams.get("passport") || searchParams.get("passportNumber") || ""),
+    [searchParams]
+  );
   const inviteToken = useMemo(() => searchParams.get("token") || searchParams.get("session") || "", [searchParams]);
-  const testSessionId = useMemo(() => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `test_${Date.now()}`), []);
+  const testSessionId = useMemo(
+    () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `test_${Date.now()}`),
+    []
+  );
   const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL || "";
 
   const [phase, setPhase] = useState("intro");
@@ -401,14 +451,12 @@ export default function DriverTest() {
     softBlue: "#eef5fc",
     softOrange: "#fff4e8",
   };
-
   const wrap = {
     fontFamily: "'Segoe UI',system-ui,sans-serif",
     background: "linear-gradient(180deg, #ffffff 0%, #f7fafc 52%, #eef4fb 100%)",
     color: cc.text,
     minHeight: "100vh",
   };
-
   const hdr = {
     background: "#ffffff",
     borderBottom: `3px solid ${cc.accent}`,
@@ -421,9 +469,7 @@ export default function DriverTest() {
     top: 0,
     zIndex: 5,
   };
-
   const body = { maxWidth: "820px", margin: "0 auto", padding: "36px 18px 46px" };
-
   const card = {
     background: cc.card,
     border: `1px solid ${cc.border}`,
@@ -432,7 +478,6 @@ export default function DriverTest() {
     marginBottom: "14px",
     boxShadow: "0 10px 24px rgba(18,56,100,0.06)",
   };
-
   const btnS = (ok) => ({
     background: ok ? `linear-gradient(135deg,${cc.accent},#ffb54f)` : "#d7e2f0",
     color: ok ? "#123864" : "#7f8ea3",
@@ -478,6 +523,27 @@ export default function DriverTest() {
               </div>
             </div>
           ))}
+          <div style={{ ...card, background: "linear-gradient(180deg,#f2f7fc 0%, #edf5fb 100%)", border: "1px solid #d7e4f1", marginTop: "16px" }}>
+            <div style={{ fontWeight: "700", color: cc.accent, fontSize: "13px", marginBottom: "6px" }}>WHY IT IS WORTH COMPLETING</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", fontSize: "15px", color: cc.navy, lineHeight: "1.7" }}>
+              {[
+                ["Priority", "#22a06b", "Stronger results are often considered first for better-paying opportunities"],
+                ["Faster match", "#f68b33", "You can be matched with suitable employers more quickly"],
+                ["Better fit", "#1f4f85", "We can present you to stronger clients with more confidence"],
+                ["Less friction", "#123864", "The follow-up conversation is usually shorter and easier"],
+              ].map(([grade, color, text]) => (
+                <div key={grade} style={{ padding: "8px 10px", background: "rgba(255,255,255,0.55)", borderRadius: "14px", border: "1px solid #e2ebf5" }}>
+                  <span style={{ color, fontWeight: "800" }}>{grade}</span> – {text}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ ...card, background: "linear-gradient(180deg,#fff5ea 0%, #fffaf5 100%)", border: "1px solid #f0d5b5" }}>
+            <div style={{ fontWeight: "700", color: cc.accent, fontSize: "13px", marginBottom: "4px" }}>IMPORTANT</div>
+            <p style={{ fontSize: "15px", color: cc.navy, margin: 0, lineHeight: "1.7", textAlign: "center" }}>
+              This short assessment usually takes around 15 minutes. It is not a school exam or a trick test — it simply helps us understand your real practical knowledge and match you with more suitable offers.
+            </p>
+          </div>
           <button style={btnS(true)} onClick={() => setPhase("info")}>GET ACCESS TO BETTER OFFERS →</button>
         </div>
       </div>
@@ -504,7 +570,13 @@ export default function DriverTest() {
           {[
             { key: "name", label: "Full name *", placeholder: "John Smith" },
             { key: "phone", label: "Phone number (WhatsApp) *", placeholder: "+421 9XX XXX XXX" },
-            { key: "passportNumber", label: "Passport number *", placeholder: "AB123456", note: passportLocked ? "Pre-filled from the invitation link. This field is locked." : "Your result will be labeled using your passport number.", readOnly: passportLocked },
+            {
+              key: "passportNumber",
+              label: "Passport number *",
+              placeholder: "AB123456",
+              note: passportLocked ? "Pre-filled from the invitation link. This field is locked." : "Your result will be labeled using your passport number.",
+              readOnly: passportLocked,
+            },
             { key: "experience", label: "Years of International trailer driving experience", placeholder: "e.g. 5" },
             { key: "licenses", label: "Licences and certificates", placeholder: "C+E, ADR, Code 95" },
           ].map((field) => (
@@ -531,7 +603,7 @@ export default function DriverTest() {
                   opacity: field.readOnly ? 0.9 : 1,
                 }}
               />
-              {field.note && <div style={{ fontSize: "11px", color: cc.dim, marginTop: "6px" }}>{field.note}</div>}
+              {field.note ? <div style={{ fontSize: "11px", color: cc.dim, marginTop: "6px" }}>{field.note}</div> : null}
             </div>
           ))}
           <button style={btnS(Boolean(canContinue))} onClick={() => canContinue && setPhase("test")}>
@@ -546,50 +618,23 @@ export default function DriverTest() {
     const answered = isPers ? pAns[key] !== undefined : ans[key] !== undefined;
     const isSign = Boolean(cur?.sign);
     const SignComp = isSign && signs[cur.sign];
-    const minutesTaken = t0 ? Math.floor((Date.now() - t0) / 60000) : 0;
 
     return (
       <div style={wrap}>
         <div ref={ref} />
-
-        {/* Header */}
         <div style={hdr}>
           <span style={{ fontSize: "24px" }}>{SECTIONS[si].icon}</span>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: "11px", color: cc.accent, fontWeight: "700" }}>SECTION {si + 1}/{SECTIONS.length}</div>
+            <div style={{ fontSize: "11px", color: cc.accent, fontWeight: "700" }}>
+              SECTION {si + 1}/{SECTIONS.length}
+            </div>
             <div style={{ fontSize: "16px", fontWeight: "700" }}>{SECTIONS[si].title}</div>
           </div>
           <div style={{ fontSize: "22px", fontWeight: "800", color: cc.accent }}>{pct}%</div>
         </div>
-
-        {/* Progress bar */}
         <div style={{ height: "4px", background: cc.border }}>
           <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg,${cc.accent},#d97706)`, transition: "width 0.4s" }} />
         </div>
-
-        {/* Timer */}
-        <div style={{
-          position: "fixed",
-          top: "68px",
-          left: "0",
-          right: "0",
-          background: "#123864",
-          color: "#fff",
-          textAlign: "center",
-          fontSize: "13px",
-          fontWeight: "700",
-          padding: "7px 0",
-          zIndex: 10,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px"
-        }}>
-          <span>⏱️</span>
-          <span>Time taken: {minutesTaken} min</span>
-          {minutesTaken >= 20 && <span style={{ color: "#ffeb3b", fontSize: "12px" }}>⚠️ Recommended max: 25 min</span>}
-        </div>
-
         <div style={body}>
           <div style={{ display: "flex", gap: "5px", marginBottom: "16px" }}>
             {qs.map((_, index) => {
@@ -598,32 +643,15 @@ export default function DriverTest() {
               return <div key={index} style={{ flex: 1, height: "5px", borderRadius: "3px", background: index === qi ? cc.accent : doneLocal ? "#bfe7ce" : cc.border }} />;
             })}
           </div>
-
           <div style={{ fontSize: "12px", color: cc.dim, fontWeight: "600", marginBottom: "6px" }}>
             Question {qi + 1} of {qs.length}
           </div>
-
-          {isSign && SignComp && (
-            <div style={{
-              display: "flex",
-              justifyContent: "center",
-              margin: "18px 0",
-              padding: "24px 16px",
-              background: "#f7fbff",
-              borderRadius: "16px",
-              border: `1px solid ${cc.border}`,
-              maxWidth: "340px",
-              marginLeft: "auto",
-              marginRight: "auto"
-            }}>
-              <div style={{ transform: "scale(1.18)" }}>
-                {cur.signArg ? signs[cur.sign](cur.signArg) : <SignComp />}
-              </div>
+          {isSign && SignComp ? (
+            <div style={{ display: "flex", justifyContent: "center", margin: "14px 0", padding: "18px", background: "#f7fbff", borderRadius: "12px", border: `1px solid ${cc.border}` }}>
+              {cur.signArg ? signs[cur.sign](cur.signArg) : <SignComp />}
             </div>
-          )}
-
+          ) : null}
           <h2 style={{ fontSize: "17px", lineHeight: "1.55", marginBottom: "18px", fontWeight: "600" }}>{cur.q}</h2>
-
           <div style={{ display: "grid", gap: "8px" }}>
             {cur.options.map((option, index) => {
               const selected = isPers ? pAns[key] === index : ans[key] === index;
@@ -631,9 +659,18 @@ export default function DriverTest() {
               const wrong = !isPers && answered && selected && cur.correct !== index;
               let borderColor = cc.border;
               let background = cc.card;
-              if (selected && isPers) { borderColor = cc.accent; background = "#fff7e6"; }
-              if (correct) { borderColor = cc.ok; background = "#edf9f1"; }
-              if (wrong) { borderColor = cc.bad; background = "#fff0f0"; }
+              if (selected && isPers) {
+                borderColor = cc.accent;
+                background = "#fff7e6";
+              }
+              if (correct) {
+                borderColor = cc.ok;
+                background = "#edf9f1";
+              }
+              if (wrong) {
+                borderColor = cc.bad;
+                background = "#fff0f0";
+              }
 
               return (
                 <button
@@ -657,21 +694,23 @@ export default function DriverTest() {
                     lineHeight: "1.5",
                   }}
                 >
-                  <div style={{
-                    width: "28px",
-                    height: "28px",
-                    borderRadius: "50%",
-                    flexShrink: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "12px",
-                    fontWeight: "700",
-                    marginTop: "1px",
-                    background: correct ? cc.ok : wrong ? cc.bad : selected ? cc.accent : "#ffffff",
-                    border: `2px solid ${correct ? cc.ok : wrong ? cc.bad : selected ? cc.accent : cc.border}`,
-                    color: selected || correct || wrong ? "#000" : cc.dim,
-                  }}>
+                  <div
+                    style={{
+                      width: "28px",
+                      height: "28px",
+                      borderRadius: "50%",
+                      flexShrink: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "12px",
+                      fontWeight: "700",
+                      marginTop: "1px",
+                      background: correct ? cc.ok : wrong ? cc.bad : selected ? cc.accent : "#ffffff",
+                      border: `2px solid ${correct ? cc.ok : wrong ? cc.bad : selected ? cc.accent : cc.border}`,
+                      color: selected || correct || wrong ? "#000" : cc.dim,
+                    }}
+                  >
                     {correct ? "✓" : wrong ? "✗" : String.fromCharCode(65 + index)}
                   </div>
                   <span style={{ paddingTop: "3px" }}>{option}</span>
@@ -679,26 +718,30 @@ export default function DriverTest() {
               );
             })}
           </div>
-
-          {showE && !isPers && cur.explanation && (
-            <div style={{
-              marginTop: "14px",
-              padding: "14px 16px",
-              borderRadius: "10px",
-              background: ans[key] === cur.correct ? "#edf9f1" : "#fff0f0",
-              border: `1px solid ${ans[key] === cur.correct ? "#b8e0c4" : "#f0b7b7"}`,
-              fontSize: "13px",
-              lineHeight: "1.6",
-            }}>
+          {showE && !isPers && cur.explanation ? (
+            <div
+              style={{
+                marginTop: "14px",
+                padding: "14px 16px",
+                borderRadius: "10px",
+                background: ans[key] === cur.correct ? "#edf9f1" : "#fff0f0",
+                border: `1px solid ${ans[key] === cur.correct ? "#b8e0c4" : "#f0b7b7"}`,
+                fontSize: "13px",
+                lineHeight: "1.6",
+              }}
+            >
               <strong style={{ color: ans[key] === cur.correct ? cc.ok : cc.bad }}>
                 {ans[key] === cur.correct ? "✓ Correct!" : "✗ Incorrect"}
               </strong>
               <div style={{ marginTop: "5px", color: cc.dim }}>{cur.explanation}</div>
             </div>
-          )}
-
+          ) : null}
           <button style={{ ...btnS(canNext()), marginTop: "16px" }} onClick={() => canNext() && next()}>
-            {si === SECTIONS.length - 1 && qi === qs.length - 1 ? "SEE MY RESULT" : qi === qs.length - 1 ? `NEXT SECTION: ${SECTIONS[si + 1]?.title} →` : "NEXT QUESTION →"}
+            {si === SECTIONS.length - 1 && qi === qs.length - 1
+              ? "SEE MY RESULT"
+              : qi === qs.length - 1
+                ? `NEXT SECTION: ${SECTIONS[si + 1]?.title} →`
+                : "NEXT QUESTION →"}
           </button>
         </div>
       </div>
@@ -707,13 +750,7 @@ export default function DriverTest() {
 
   if (phase === "results") {
     const results = calc();
-    const gi = {
-      A: {color:"#1fa269", bg:"#eaf8f0", label:"Category A - Excellent", desc:"Very strong knowledge. Suitable for stronger clients and premium opportunities."},
-      B: {color:"#c98700", bg:"#fff7e6", label:"Category B - Good", desc:"Good knowledge. Usually suitable after a short introduction or check call."},
-      C: {color:"#e07b1f", bg:"#fff2e8", label:"Category C - Developing", desc:"Some areas need strengthening. We can help with a short preparation course to get you ready."},
-      D: {color:"#6b7280", bg:"#f3f4f6", label:"Category D - Learning Path", desc:"Your results show areas where more experience or preparation would help. This is completely normal - many excellent drivers started exactly where you are now. We recommend our free preparation materials to strengthen your knowledge, and you are welcome to retake the test at any time."}
-    }[results.grade];
-
+    const gi = GI[results.grade];
     const knowledgeDetails = buildKnowledgeAnswerList(ans);
     const personalityDetails = buildPersonalityAnswerList(pAns);
 
@@ -722,7 +759,11 @@ export default function DriverTest() {
         <div ref={ref} />
         <div style={hdr}>
           <div>
-            <img src="https://ergasia.group/JPG%20copy%20copy.jpg" alt="Ergasia logo" style={{ height: "60px", width: "auto", display: "block", marginBottom: "6px", borderRadius: "10px", boxShadow: "0 6px 18px rgba(18,56,100,0.10)" }} />
+            <img
+              src="https://ergasia.group/JPG%20copy%20copy.jpg"
+              alt="Ergasia logo"
+              style={{ height: "60px", width: "auto", display: "block", marginBottom: "6px", borderRadius: "10px", boxShadow: "0 6px 18px rgba(18,56,100,0.10)" }}
+            />
             <div style={{ fontSize: "12px", color: "#f68b33", fontWeight: "700", letterSpacing: "0.4px" }}>VERIFICATION RESULTS</div>
           </div>
         </div>
@@ -738,30 +779,208 @@ export default function DriverTest() {
             <div style={{ fontSize: "13px", color: cc.dim, lineHeight: "1.6" }}>
               Your result is being prepared with two attachments: PDF and JSON. Passport: <strong>{maskPassportNumber(info.passportNumber)}</strong>
             </div>
-            {submissionState.status === "sending" && <div style={{ marginTop: "10px", fontSize: "13px", color: cc.accent }}>Creating PDF and sending the result to the system...</div>}
-            {submissionState.status === "success" && <div style={{ marginTop: "10px", fontSize: "13px", color: cc.ok }}>Done. Both the PDF and JSON were sent to the n8n webhook.</div>}
-            {submissionState.status === "error" && (
+            {submissionState.status === "sending" ? <div style={{ marginTop: "10px", fontSize: "13px", color: cc.accent }}>Creating PDF and sending the result to the system...</div> : null}
+            {submissionState.status === "success" ? <div style={{ marginTop: "10px", fontSize: "13px", color: cc.ok }}>Done. Both the PDF and JSON were sent to the n8n webhook.</div> : null}
+            {submissionState.status === "error" ? (
               <div style={{ marginTop: "10px", fontSize: "13px", color: cc.bad }}>
                 Automatic submission failed: {submissionState.error}
                 <div style={{ marginTop: "10px" }}>
                   <button onClick={retrySubmit} style={{ ...btnS(true), maxWidth: "240px" }}>Try sending again</button>
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
 
-          {/* Zvyšok results stránky (sekcie, personality, atď.) môžeš doplniť z pôvodného kódu podľa potreby. Pre jednoduchosť som ho tu skrátil, ale plne funguje s calc() funkciou. */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginBottom: "20px" }}>
+            {[
+              { label: "Knowledge", value: `${results.kP}%`, sub: `${results.mc}/${results.totalK}` },
+              { label: "Work style", value: `${results.pP}%`, sub: "driver profile" },
+              { label: "Time", value: `${results.dur} min`, sub: "total" },
+            ].map((item) => (
+              <div key={item.label} style={{ ...card, textAlign: "center", padding: "14px 8px" }}>
+                <div style={{ fontSize: "22px", fontWeight: "800", color: cc.accent }}>{item.value}</div>
+                <div style={{ fontSize: "11px", fontWeight: "700", marginTop: "2px" }}>{item.label}</div>
+                <div style={{ fontSize: "10px", color: cc.dim }}>{item.sub}</div>
+              </div>
+            ))}
+          </div>
+
+          <h3 style={{ fontSize: "14px", color: cc.accent, margin: "0 0 10px" }}>Section results</h3>
+          {Object.entries(results.sr).map(([sectionId, data]) => {
+            const section = SECTIONS.find((item) => item.id === sectionId);
+            const color = data.p >= 75 ? cc.ok : data.p >= 50 ? "#eab308" : cc.bad;
+            return (
+              <div key={sectionId} style={{ ...card, padding: "14px 16px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px" }}>
+                  <span style={{ fontWeight: "600" }}>{section?.icon} {section?.title}</span>
+                  <span style={{ fontWeight: "800", color }}>{data.p}% ({data.c}/{data.t})</span>
+                </div>
+                <div style={{ height: "5px", background: cc.border, borderRadius: "3px" }}>
+                  <div style={{ height: "100%", width: `${data.p}%`, background: color, borderRadius: "3px", transition: "width 0.8s" }} />
+                </div>
+              </div>
+            );
+          })}
+
+          <h3 style={{ fontSize: "14px", color: cc.accent, margin: "20px 0 10px" }}>Driver work style</h3>
+          <div style={card}>
+            {Object.entries(results.ts).map(([trait, data]) => {
+              const percent = Math.round((data.t / data.m) * 100);
+              const color = percent >= 70 ? cc.ok : percent >= 40 ? "#eab308" : cc.bad;
+              return (
+                <div key={trait} style={{ marginBottom: "12px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
+                    <span style={{ fontWeight: "600" }}>{TL[trait]}</span>
+                    <span style={{ color, fontWeight: "700" }}>{percent}%</span>
+                  </div>
+                  <div style={{ height: "5px", background: cc.border, borderRadius: "3px" }}>
+                    <div style={{ height: "100%", width: `${percent}%`, background: color, borderRadius: "3px" }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {(results.grade === "C" || results.grade === "D") && (
+            <div style={{ ...card, background: "#f0f7ff", border: "1px solid #bdd8f5", marginTop: "20px" }}>
+              <div style={{ fontWeight: "700", color: "#2563eb", fontSize: "14px", marginBottom: "10px" }}>📘 Your Personal Development Plan</div>
+              <p style={{ fontSize: "13px", color: "#374151", lineHeight: "1.7", margin: "0 0 12px" }}>
+                Every professional driver started somewhere. Here is what we recommend based on your results:
+              </p>
+              {Object.entries(results.sr).filter(([, d]) => d.p < 60).map(([sectionId, data]) => {
+                const section = SECTIONS.find(s => s.id === sectionId);
+                const tips = {
+                  aetr: "Review EU Regulation 561/2006 - focus on split breaks (15+30 min), the 90-hour fortnightly limit, and weekly rest compensation rules. Free guides are available on the EUR-Lex website.",
+                  cmr: "Study the CMR Convention basics - especially box 18 (reservations), box 24 (delivery remarks), and the difference between T1/T2 transit documents. Ask experienced colleagues about real situations.",
+                  tolls: "Familiarise yourself with toll systems country by country. The key ones are Toll Collect (DE), GO-Box (AT), SkyToll (SK), and the differences with Swiss LSVA. Many toll providers have free apps.",
+                  loading: "Focus on axle weight limits (drive axle 11.5t, tri-axle 24t) and EN 12195-1 securing forces (80/50/50). Watch practical loading videos on YouTube - visual learning helps a lot.",
+                  signs: "Review European road signs relevant to trucks - especially weight/height/width limits, environmental zones, and country-specific restrictions like night driving bans. Practice recognition regularly."
+                };
+                return (
+                  <div key={sectionId} style={{ marginBottom: "10px", padding: "10px 14px", background: "#fff", borderRadius: "8px", border: "1px solid #e5e7eb" }}>
+                    <div style={{ fontWeight: "700", fontSize: "13px", color: "#1e40af", marginBottom: "4px" }}>{section?.icon} {section?.title} ({data.p}%)</div>
+                    <div style={{ fontSize: "12px", color: "#4b5563", lineHeight: "1.6" }}>{tips[sectionId] || "Review materials for this section and practice."}</div>
+                  </div>
+                );
+              })}
+              <p style={{ fontSize: "13px", color: "#374151", lineHeight: "1.7", margin: "12px 0 0", fontWeight: "600" }}>
+                You are welcome to retake the test any time after reviewing. Many drivers improve significantly on the second attempt.
+              </p>
+            </div>
+          )}
+
+          <div style={{ ...card, background: "linear-gradient(180deg,#fff5ea 0%, #fffaf5 100%)", border: `1px solid #f0d5b5`, marginTop: "20px" }}>
+            <div style={{ fontWeight: "700", color: cc.accent, fontSize: "13px", marginBottom: "8px" }}>NEXT STEP</div>
+            <p style={{ fontSize: "15px", color: cc.navy, margin: 0, lineHeight: "1.7", textAlign: "center" }}>
+              A recruiter may contact you for a short follow-up video call. Please keep your documents ready: driving licence, driver card, passport, and any qualifications (Code 95, ADR).
+            </p>
+          </div>
 
           <div style={{ marginTop: "20px", textAlign: "center", fontSize: "11px", color: cc.dim, borderTop: `1px solid ${cc.border}`, paddingTop: "14px" }}>
             Test ID: {testSessionId} | {info.name} | passport: {maskPassportNumber(info.passportNumber)} | {new Date().toLocaleDateString("sk")} | © ERGASIA s.r.o.
           </div>
 
-          {/* Hidden PDF export container */}
           <div style={{ position: "absolute", left: "-10000px", top: 0, width: "820px", background: "#ffffff", color: "#111827", padding: "24px" }}>
             <div ref={resultsExportRef} style={{ fontFamily: "Arial, sans-serif", background: "#ffffff", color: "#111827" }}>
-              {/* PDF content – môžeš rozšíriť podľa potreby */}
               <div style={{ borderBottom: "3px solid #f59e0b", paddingBottom: "12px", marginBottom: "18px" }}>
                 <div style={{ fontSize: "28px", fontWeight: 800, color: "#111827" }}>ERGASIA - International Trailer Driver Verification Result</div>
+                <div style={{ fontSize: "14px", color: "#6b7280", marginTop: "4px" }}>Generated automatically after the driver completed the verification</div>
+              </div>
+
+              <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "18px" }}>
+                <tbody>
+                  {[
+                    ["Full name", info.name || "-"],
+                    ["Phone", info.phone || "-"],
+                    ["Passport number", info.passportNumber || "-"],
+                    ["Experience", info.experience || "-"],
+                    ["Licences", info.licenses || "-"],
+                    ["Test ID", testSessionId],
+                    ["Date", new Date().toLocaleString("sk")],
+                  ].map(([label, value]) => (
+                    <tr key={label}>
+                      <td style={{ width: "180px", padding: "8px", border: "1px solid #d1d5db", fontWeight: 700, background: "#f3f4f6" }}>{label}</td>
+                      <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>{value}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div style={{ display: "flex", gap: "12px", marginBottom: "18px" }}>
+                {[
+                  ["Grade", results.grade],
+                  ["Knowledge", `${results.kP}% (${results.mc}/${results.totalK})`],
+                  ["Personality", `${results.pP}%`],
+                  ["Duration", `${results.dur} min`],
+                ].map(([label, value]) => (
+                  <div key={label} style={{ flex: 1, border: "1px solid #d1d5db", borderRadius: "8px", padding: "12px", background: "#fafafa" }}>
+                    <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>{label}</div>
+                    <div style={{ fontSize: "20px", fontWeight: 800 }}>{value}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginBottom: "18px" }}>
+                <div style={{ fontSize: "18px", fontWeight: 800, marginBottom: "10px" }}>Section Results</div>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: "left", padding: "8px", border: "1px solid #d1d5db", background: "#111827", color: "#ffffff" }}>Section</th>
+                      <th style={{ textAlign: "left", padding: "8px", border: "1px solid #d1d5db", background: "#111827", color: "#ffffff" }}>Correct</th>
+                      <th style={{ textAlign: "left", padding: "8px", border: "1px solid #d1d5db", background: "#111827", color: "#ffffff" }}>Percent</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(results.sr).map(([sectionId, data]) => (
+                      <tr key={sectionId}>
+                        <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>{SECTIONS.find((item) => item.id === sectionId)?.title || sectionId}</td>
+                        <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>{data.c}/{data.t}</td>
+                        <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>{data.p}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div style={{ marginBottom: "18px" }}>
+                <div style={{ fontSize: "18px", fontWeight: 800, marginBottom: "10px" }}>Knowledge Answers</div>
+                {knowledgeDetails.map((item, index) => (
+                  <div key={`${item.sectionId}-${item.questionIndex}`} style={{ border: "1px solid #d1d5db", borderRadius: "8px", marginBottom: "10px", overflow: "hidden" }}>
+                    <div style={{ padding: "10px 12px", background: item.isCorrect ? "#dcfce7" : "#fee2e2", fontWeight: 700 }}>
+                      {index + 1}. {item.sectionTitle} - {item.isCorrect ? "Correct" : "Wrong"}
+                    </div>
+                    <div style={{ padding: "12px" }}>
+                      <div style={{ fontWeight: 700, marginBottom: "6px" }}>{item.question}</div>
+                      <div style={{ marginBottom: "4px" }}><strong>Selected:</strong> {item.selectedOption || "-"}</div>
+                      <div style={{ marginBottom: "4px" }}><strong>Correct:</strong> {item.correctOption}</div>
+                      <div style={{ color: "#6b7280" }}>{item.explanation}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginBottom: "18px" }}>
+                <div style={{ fontSize: "18px", fontWeight: 800, marginBottom: "10px" }}>Personality Answers</div>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: "left", padding: "8px", border: "1px solid #d1d5db", background: "#111827", color: "#ffffff" }}>Trait</th>
+                      <th style={{ textAlign: "left", padding: "8px", border: "1px solid #d1d5db", background: "#111827", color: "#ffffff" }}>Question</th>
+                      <th style={{ textAlign: "left", padding: "8px", border: "1px solid #d1d5db", background: "#111827", color: "#ffffff" }}>Selected answer</th>
+                      <th style={{ textAlign: "left", padding: "8px", border: "1px solid #d1d5db", background: "#111827", color: "#ffffff" }}>Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {personalityDetails.map((item) => (
+                      <tr key={`personality-${item.questionIndex}`}>
+                        <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>{item.traitLabel}</td>
+                        <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>{item.question}</td>
+                        <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>{item.selectedOption || "-"}</td>
+                        <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>{item.selectedScore ?? "-"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
